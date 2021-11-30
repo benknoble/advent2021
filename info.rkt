@@ -7,6 +7,7 @@
                "math"
                "memoize"
                "sawzall"
+               "brag"
                "advent-of-code"))
 (define scribblings '())
 (define pkg-desc "Advent of Code 2021 Package")
