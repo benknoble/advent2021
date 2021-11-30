@@ -1,0 +1,24 @@
+on: [push, pull_request]
+name: CI
+jobs:
+  build:
+    name: "Build on Racket '${{ matrix.racket-version }}' (${{ matrix.racket-variant }})"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        racket-version: ["stable", "current"]
+        racket-variant: ["BC", "CS"]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: Bogdanp/setup-racket@v0.12
+        with:
+          architecture: x64
+          distribution: full
+          variant: ${{ matrix.racket-variant }}
+          version: ${{ matrix.racket-version }}
+      - name: Installing advent2021 and its dependencies
+        run: raco pkg install --no-docs --auto --name advent2021
+      - name: Compiling advent2021 and building its docs
+        run: raco setup --check-pkg-deps --unused-pkg-deps advent2021
+      - name: Testing advent2021
+        run: raco test -x -p advent2021
