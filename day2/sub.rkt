@@ -10,7 +10,7 @@
          up
          down
          handle-directions1
-         #;handle-directions2)
+         handle-directions2)
 
 (module reader racket
   (provide read-syntax)
@@ -34,7 +34,7 @@
   (begin
     (define dirs (list direction ...))
     (displayln (time (handle-directions1 dirs)))
-    #;(displayln (time (handle-directions2 dirs)))))
+    (displayln (time (handle-directions2 dirs)))))
 
 (define (handle-directions1 directions)
   (for/fold ([pos 0] [depth 0] #:result (* pos depth))
@@ -43,6 +43,14 @@
       [`(forward ,num) (values (+ pos num) depth)]
       [`(up ,num) (values pos (- depth num))]
       [`(down ,num) (values pos (+ depth num))])))
+
+(define (handle-directions2 directions)
+  (for/fold ([pos 0] [depth 0] [aim 0] #:result (* pos depth))
+    [(direction (in-list directions))]
+    (match direction
+      [`(forward ,num) (values (+ pos num) (+ depth (* aim num)) aim)]
+      [`(up ,num) (values pos depth (- aim num))]
+      [`(down ,num) (values pos depth (+ aim num))])))
 
 (define-syntax-parse-rule (forward num:number)
   `(forward ,num))
