@@ -40,16 +40,16 @@
              [aim 0] ;; like depth in part1
              #:result (list (* pos aim) (* pos depth)))
     [(direction (in-list directions))]
-    (match direction
-      [`(forward ,num) (values (+ pos num) (+ depth (* aim num)) aim)]
-      [`(up ,num) (values pos depth (- aim num))]
-      [`(down ,num) (values pos depth (+ aim num))])))
+    (direction pos depth aim)))
 
 (define-syntax-parse-rule (forward num:number)
-  `(forward ,num))
+  (λ (pos depth aim)
+    (values (+ pos num) (+ depth (* aim num)) aim)))
 
 (define-syntax-parse-rule (up num:number)
-  `(up ,num))
+  (λ (pos depth aim)
+    (values pos depth (- aim num))))
 
 (define-syntax-parse-rule (down num:number)
-  `(down ,num))
+  (λ (pos depth aim)
+    (values pos depth (+ aim num))))
