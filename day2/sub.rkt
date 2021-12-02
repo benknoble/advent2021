@@ -9,7 +9,8 @@
          forward
          up
          down
-         handle-directions)
+         handle-directions1
+         #;handle-directions2)
 
 (module reader racket
   (provide read-syntax)
@@ -27,21 +28,27 @@
 
 (define-syntax-parse-rule (module-begin course)
   (#%module-begin
-   (displayln (time course))))
+   course))
 
 (define-syntax-parse-rule (course direction ...)
-  (handle-directions direction ...))
+  (begin
+    (define dirs (list direction ...))
+    (displayln (time (handle-directions1 dirs)))
+    #;(displayln (time (handle-directions2 dirs)))))
 
-(define (handle-directions . directions)
+(define (handle-directions1 directions)
   (for/fold ([pos 0] [depth 0] #:result (* pos depth))
     [(direction (in-list directions))]
-    (direction pos depth)))
+    (match direction
+      [`(forward ,num) (values (+ pos num) depth)]
+      [`(up ,num) (values pos (- depth num))]
+      [`(down ,num) (values pos (+ depth num))])))
 
 (define-syntax-parse-rule (forward num:number)
-  (λ (pos depth) (values (+ pos num) depth)))
+  `(forward ,num))
 
 (define-syntax-parse-rule (up num:number)
-  (λ (pos depth) (values pos (- depth num))))
+  `(up ,num))
 
 (define-syntax-parse-rule (down num:number)
-  (λ (pos depth) (values pos (+ depth num))))
+  `(down ,num))
