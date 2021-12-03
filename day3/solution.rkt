@@ -58,16 +58,20 @@
   (~> file->lines part1*))
 
 (define (criterion-solver selector rows)
-  (define (fieldth field) (flow (~> (list-ref field))))
-  (let loop ([rows rows]
-             [field 0])
-    (define column (map (fieldth field) rows))
-    (define criterion (selector column))
-    (define rows*
-      (filter (flow (~> (fieldth field) (= criterion))) rows))
-    (if (= 1 (length rows*))
-      (bit-list->integer2 (first rows*))
-      (loop rows* (add1 field)))))
+  (define (fieldth field) (curryr list-ref field))
+  (define (filterc field criterion rows)
+    (define-flow matches (~> (fieldth field) (= criterion)))
+    (filter matches rows))
+  ;; we cannot name this loop, because qi's flow has a loop syntactic form that
+  ;; confuses our intent.
+  (let solver-loop ([rows rows]
+                    [field 0])
+    (~>> (rows)
+         (-< (~>> (map (fieldth field)) selector) _)
+         (filterc field)
+         (if (~> length (= 1))
+           (~> first bit-list->integer2)
+           (~> (solver-loop (add1 field)))))))
 
 (define-flow part2*
   (~> lines->rows
