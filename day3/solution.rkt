@@ -17,17 +17,15 @@
 
 (define-flow most-common-bit
   (~> (-< (~> sep +) (~> length (/ 2)))
-      >=))
-
-(define-flow column->bit
-  (~> most-common-bit boolean->bit))
+      >=
+      boolean->bit))
 
 (define-flow invert-bit-list
   (~>> sep (amp (~>> (- 1))) collect))
 
 (define-flow columns->gamma+epsilon
   (~> sep
-      (amp column->bit)
+      (amp most-common-bit)
       collect
       (-< _ invert-bit-list)))
 
