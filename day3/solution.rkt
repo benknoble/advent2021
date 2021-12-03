@@ -9,11 +9,16 @@
       open-input-string
       read))
 
+(define-flow lines->rows
+  (~> sep
+      (amp (~>> string->list (map char->num)))
+      collect))
+
+(define-flow rows->columns
+  (~>> (apply map list)))
+
 (define-flow lines->columns
-  (~>> sep
-       (amp (~>> string->list (map char->num)))
-       collect
-       (apply map list)))
+  (~>> lines->rows rows->columns))
 
 (define-flow most-common-bit
   (~> (-< (~> sep +) (~> length (/ 2)))
