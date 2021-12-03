@@ -20,6 +20,9 @@
       >=
       boolean->bit))
 
+(define-flow least-common-bit
+  (~>> most-common-bit (- 1)))
+
 (define-flow invert-bit-list
   (~>> sep (amp (~>> (- 1))) collect))
 
