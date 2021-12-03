@@ -58,7 +58,29 @@
 (define-flow part1
   (~> file->lines part1*))
 
+(define (criterion-solver selector rows)
+  (define (fieldth field) (flow (~> (list-ref field))))
+  (let loop ([rows rows]
+             [field 0])
+    (define column (map (fieldth field) rows))
+    (define criterion (selector column))
+    (define rows*
+      (filter (flow (~> (fieldth field) (= criterion))) rows))
+    (if (= 1 (length rows*))
+      (bit-list->integer2 (first rows*))
+      (loop rows* (add1 field)))))
+
+(define-flow part2*
+  (~> lines->rows
+      (-< (~>> (criterion-solver most-common-bit))
+          (~>> (criterion-solver least-common-bit)))
+      *))
+
+(define-flow part2
+  (~> file->lines part2*))
+
 (module+ main
   (command-line
     #:args (input)
-    (displayln (time (part1 input)))))
+    (displayln (time (part1 input)))
+    (displayln (time (part2 input)))))
