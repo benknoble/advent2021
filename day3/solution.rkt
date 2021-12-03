@@ -17,7 +17,7 @@
 
 (define-flow most-common-bit
   (~> (-< (~> sep +) (~> length (/ 2)))
-      >))
+      >=))
 
 (define-flow column->bit
   (~> most-common-bit boolean->bit))
