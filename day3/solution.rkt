@@ -15,10 +15,12 @@
        collect
        (apply map list)))
 
-(define-flow column->bit
+(define-flow most-common-bit
   (~> (-< (~> sep +) (~> length (/ 2)))
-      >
-      boolean->bit))
+      >))
+
+(define-flow column->bit
+  (~> most-common-bit boolean->bit))
 
 (define-flow invert-bit-list
   (~>> sep (amp (~>> (- 1))) collect))
