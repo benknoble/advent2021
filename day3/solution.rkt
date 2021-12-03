@@ -1,8 +1,7 @@
 #lang racket
 
 (require qi
-         rebellion/binary/bit
-         )
+         rebellion/binary/bit)
 
 (define-flow char->num
   (~> string
