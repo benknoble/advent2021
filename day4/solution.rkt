@@ -64,6 +64,15 @@
       (values move (first (filter winning boards*)))
       (loop boards* moves*))))
 
+(define (find-last-winner moves boards)
+  (let loop ([boards boards]
+             [moves moves])
+    (match-define (cons move moves*) moves)
+    (define boards* (map (curryr mark move) boards))
+    (if (~> (boards*) sep (all winning))
+      (values move (~> (boards) sep (pass (not winning)) 1> (mark move)))
+      (loop boards* moves*))))
+
 (define-flow (score-winner move board)
   (~> (== _
           (~> board-board hash-values sep (pass number?) +))
@@ -73,7 +82,12 @@
   (~> string->moves+boards find-first-winner score-winner))
 (define-flow part1 (~> file->string part1*))
 
+(define-flow part2*
+  (~> string->moves+boards find-last-winner score-winner))
+(define-flow part2 (~> file->string part2*))
+
 (module+ main
   (command-line
     #:args (input)
-    (displayln (time (part1 input)))))
+    (displayln (time (part1 input)))
+    (displayln (time (part2 input)))))
