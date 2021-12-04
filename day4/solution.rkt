@@ -66,7 +66,7 @@
 
 (define-flow (score-winner move board)
   (~> (== _
-          (~> board-board hash-values sep (sieve number? + ground)))
+          (~> board-board hash-values sep (pass number?) +))
       *))
 
 (define-flow part1*
