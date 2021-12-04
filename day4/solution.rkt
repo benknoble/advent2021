@@ -28,8 +28,11 @@
               (amp make-board)
               collect))))
 
+(define-flow (winning-row row)
+  (~> sep (all false?)))
+
 (define-flow (winning-rows rows)
-  (~> sep (amp (~> sep none?)) any?))
+  (~> sep (any winning-rows)))
 
 (define-flow (winning-rows-or-columns rows)
   (or winning-rows
