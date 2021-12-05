@@ -1,7 +1,6 @@
 #lang racket
 
-(require rebellion/collection/multiset
-         qi)
+(require qi)
 
 (define (my-read in)
   (match (read in)
@@ -63,9 +62,9 @@
 
 (define-flow (count-overlaps segments)
   (~>> points-covered
-       multiset
-       multiset-frequencies
-       hash-values
+       collect
+       (group-by identity)
+       (map length)
        (count (flow (>= 2)))))
 
 (define-flow part1* (~>> list->segments (filter segment-cardinal?) count-overlaps))
