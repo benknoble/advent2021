@@ -40,7 +40,6 @@
 
 (define (points-covered segments)
   (transduce segments
-             (filtering segment-cardinal?)
              (append-mapping cardinal-segment->list)
              #:into into-multiset))
 
@@ -50,7 +49,7 @@
        hash-values
        (count (flow (>= 2)))))
 
-(define-flow part1* (~> list->segments count-overlaps))
+(define-flow part1* (~>> list->segments (filter segment-cardinal?) count-overlaps))
 (define-flow part1 (~> (file->list my-read) part1*))
 
 (module+ main
