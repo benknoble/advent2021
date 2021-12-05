@@ -50,10 +50,10 @@
               [y (in-range y1 (+ y2 y-direction) y-direction)])
      (point x y))])
 
-(define (points-covered segments)
-  (transduce segments
-             (append-mapping segment->list)
-             #:into into-multiset))
+(define-flow (points-covered segments)
+  (~>> sep
+       (amp (~> segment->list sep))
+       multiset))
 
 (define-flow (count-overlaps segments)
   (~>> points-covered
