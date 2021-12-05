@@ -1,9 +1,6 @@
 #lang racket
 
-(require rebellion/streaming/transducer
-         rebellion/streaming/reducer
-         rebellion/collection/list
-         rebellion/collection/multiset
+(require rebellion/collection/multiset
          qi)
 
 (define (my-read in)
@@ -14,17 +11,15 @@
 (struct point [x y] #:transparent)
 (struct segment [a b] #:transparent)
 
-(define (structing num-fields constructor)
-  (batching (reducer-limit
-              (reducer-map into-list #:range (flow (~> sep constructor)))
-              num-fields)))
-
 (define (list->segments xs)
-  (transduce xs
-             (filtering number?)
-             (structing 2 point)
-             (structing 2 segment)
-             #:into into-list))
+  (let loop ([xs (filter number? xs)]
+             [acc null])
+    (cond
+      [(empty? xs) acc]
+      [else
+        (define-values (x4 xs*) (split-at xs 4))
+        (define-values (x21 x22) (split-at x4 2))
+        (loop xs* (cons (segment (apply point x21) (apply point x22)) acc))])))
 
 (define/match (segment-cardinal? s)
   [((segment (point x1 y1) (point x2 y2)))
