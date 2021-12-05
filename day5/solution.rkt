@@ -59,11 +59,11 @@
 
 (define-flow (points-covered segments)
   (~>> sep
-       (amp (~> segment->list sep))
-       multiset))
+       (amp (~> segment->list sep))))
 
 (define-flow (count-overlaps segments)
   (~>> points-covered
+       multiset
        multiset-frequencies
        hash-values
        (count (flow (>= 2)))))
