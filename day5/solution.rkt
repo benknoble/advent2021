@@ -33,12 +33,14 @@
 (define/match (segment->list s)
   ;; horizontal
   [((segment (point x y1) (point x y2)))
+   (define y0 (min y1 y2))
    (build-list (add1 (abs (- y1 y2)))
-               (λ (y*) (point x (+ y* (min y1 y2)))))]
+               (λ (y*) (point x (+ y* y0))))]
   ;; vertical
   [((segment (point x1 y) (point x2 y)))
+   (define x0 (min x1 x2))
    (build-list (add1 (abs (- x1 x2)))
-               (λ (x*) (point (+ x* (min x1 x2)) y)))]
+               (λ (x*) (point (+ x* x0) y)))]
   ;; diagonal (45 degrees)
   [((segment (point x1 y1) (point x2 y2)))
    (define (range-direction a b) (if (<= a b) 1 -1))
