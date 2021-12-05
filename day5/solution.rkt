@@ -12,6 +12,18 @@
 (struct segment [a b] #:transparent)
 
 (define (list->segments xs)
+  ;; qi: equally performant, hard to read
+  ;; (let go ([acc null]
+  ;;          [xs (filter number? xs)])
+  ;;   (on (acc xs)
+  ;;       (if (~> 2> empty?)
+  ;;         1>
+  ;;         (~> (== _
+  ;;                 (~> (split-at 4)
+  ;;                     (== (~> (split-at 2) (amp (~> sep point)) segment)
+  ;;                         _)))
+  ;;             (group 2 (~> X cons) _)
+  ;;             go))))
   (let loop ([xs (filter number? xs)]
              [acc null])
     (cond
