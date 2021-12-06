@@ -57,10 +57,12 @@
   (check-equal? (count-generations 3 20) 7))
 
 (define (count-all-generations fishes days-left)
-  (~> (fishes)
-       sep
-       (amp (count-generations days-left))
-       +))
+  (define fishes*
+    (for/fold ([f (hash)])
+      ([fish (in-list fishes)])
+      (hash-update f fish add1 0)))
+  (for/sum ([(fish num-fish) (in-hash fishes*)])
+    (* num-fish (count-generations fish days-left))))
 
 (module+ test
   (check-equal? (count-all-generations '(3) 0) 1)
@@ -73,12 +75,16 @@
   (check-equal? (count-all-generations '(3) 13) 4)
   (check-equal? (count-all-generations '(3) 20) 7)
   (check-equal? (count-all-generations '(3 4 3 1 2) 18) 26)
-  (check-equal? (count-all-generations '(3 4 3 1 2) 80) 5934))
+  (time (check-equal? (count-all-generations '(3 4 3 1 2) 80) 5934))
+  #;(time (check-equal? (count-all-generations '(3 4 3 1 2) 256) 26984457539)))
 
 (define-flow part1* (~> (count-all-generations 80)))
 (define-flow part1 (~> (file->list read-ignore-comma) part1*))
+(define-flow part2* (~> (count-all-generations 256) length))
+(define-flow part2 (~> (file->list read-ignore-comma) part2*))
 
 (module+ main
   (command-line
     #:args (input)
-    (displayln (time (part1 input)))))
+    (displayln (time (part1 input)))
+    (displayln (time (part2 input)))))
