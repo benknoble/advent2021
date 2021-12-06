@@ -1,11 +1,7 @@
 #lang racket
 
-(require qi)
-
-(define (my-read in)
-  (match (read in)
-    [(list 'unquote x) x]
-    [x x]))
+(require qi
+         "../common.rkt")
 
 (struct point [x y] #:transparent)
 (struct segment [a b] #:transparent)
@@ -68,10 +64,10 @@
        (count (flow (>= 2)))))
 
 (define-flow part1* (~>> list->segments (filter segment-cardinal?) count-overlaps))
-(define-flow part1 (~> (file->list my-read) part1*))
+(define-flow part1 (~> (file->list read-ignore-comma) part1*))
 
 (define-flow part2* (~> list->segments count-overlaps))
-(define-flow part2 (~> (file->list my-read) part2*))
+(define-flow part2 (~> (file->list read-ignore-comma) part2*))
 
 (module+ main
   (command-line
