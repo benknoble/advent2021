@@ -4,6 +4,11 @@
          qi
          memoize)
 
+(define (make-fishes fishes)
+  (for/fold ([f (hash)])
+    ([fish (in-list fishes)])
+    (hash-update f fish add1 0)))
+
 (module+ test (require rackunit))
 
 (define/memo (children-days fish days-left)
@@ -57,10 +62,7 @@
   (check-equal? (count-generations 3 20) 7))
 
 (define (count-all-generations fishes days-left)
-  (define fishes*
-    (for/fold ([f (hash)])
-      ([fish (in-list fishes)])
-      (hash-update f fish add1 0)))
+  (define fishes* (make-fishes fishes))
   (for/sum ([(fish num-fish) (in-hash fishes*)])
     (* num-fish (count-generations fish days-left))))
 
