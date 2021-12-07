@@ -21,9 +21,9 @@
 
 (define (best-position-quad posns)
   (~>> (posns)
-       sep
-       max
-       range
+       mean
+       (-< floor ceiling)
+       collect
        (argmin (flow (cost-quad posns)))))
 
 (define-flow part1* (~> (-< best-position-linear _) cost-linear))
