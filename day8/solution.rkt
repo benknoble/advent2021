@@ -48,6 +48,32 @@
       +))
 (define-flow part1 (~> file->notes part1*))
 
+(define solve-note
+  (match-lambda
+    [(note pats outputs)
+
+     (hash 'a 'c
+           'b 'f)
+     ]))
+
+(define-flow digits->number
+  (~> sep (amp ~a) string-append string->number))
+
+(define-flow (decode-note note)
+  (~> (-< (~> solve-note
+              (esc (λ (wire->wire)
+                     (flow
+                       (~> (set-map (flow (~>> (hash-ref wire->wire))))
+                           sep set
+                           (hash-ref wires->digit _))))))
+          note-outputs)
+      map
+      digits->number))
+
+(define-flow part2*
+  (~> sep (amp decode-note) +))
+(define-flow part2 (~> file->notes part2*))
+
 (module+ main
   (command-line
     #:args (input)
