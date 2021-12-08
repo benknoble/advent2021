@@ -60,11 +60,72 @@
 
 (define solve-note
   (match-lambda
-    [(note pats outputs)
+    [(note pats _)
+     ;;  a
+     ;; b c
+     ;;  d
+     ;; e f
+     ;;  g
+     ;; Algorithm:
+     ;; 0. Identify patterns for 1, 4, 7, 8 (I will pun the digits to the sets
+     ;;    representing the corresponding pattern).
+     ;; 1. 7-1 tells us what maps to a (call it A).
+     ;; 2. Collect groups 2,3,5 and 0,6,9 (same numbers of segments)
+     ;; 3. Separate 6 from 0,6,9. 6 is the only member X of the group such
+     ;;    that X∩1 ≠ 1, _i.e._, such that ¬(1⊆X).
+     ;; 4. 1-6 tells us what maps to c.
+     ;; 5. Since we know what maps to c, and 1 is {C,F}, we can find what maps
+     ;;    to f by 1-{C}.
+     ;; 6. Separate 0 from 0 by 9∩4 = 4 (4⊆9), 0∩4 ≠ 4 (¬(4⊆0)).
+     ;; 7. 8-0 tells us what maps to d.
+     ;; 8. Separate 2,3,5 by 3∩1=1 (1⊆3), [C∈2, ¬(F∈2)], [¬(C∈5), F∈5]
+     ;; 9. 6-5 tells us what maps to e.
+     ;; 10. 5-3 tells us what maps to b.
+     ;; 11. 8-{ABCDEF} tells us what maps to g.
 
-     (hash 'a 'c
-           'b 'f)
-     ]))
+     ;; 0
+     (match-define `(,one) (find-pats-matching-digit pats 1))
+     (match-define `(,four) (find-pats-matching-digit pats 4))
+     (match-define `(,seven) (find-pats-matching-digit pats 7))
+     (match-define `(,eight) (find-pats-matching-digit pats 8))
+     ;; 1
+     (define A (set-first (set-subtract seven one)))
+     ;; 2
+     (define two-three-five
+       (remove-duplicates (find-pats-matching-digits pats '(2 3 5))))
+     (define zero-six-nine
+       (remove-duplicates (find-pats-matching-digits pats '(0 6 9))))
+     ;; 3
+     (match-define-values (`(,six) zero-nine)
+       (partition (flow (~>> (subset? one) not)) zero-six-nine))
+     ;; 4
+     (define C (set-first (set-subtract one six)))
+     ;; 5
+     (define F (set-first (set-remove one C)))
+     ;; 6
+     (match-define-values (`(,nine) `(,zero))
+       (partition (flow (subset? four _)) zero-nine))
+     ;; 7
+     (define D (set-first (set-subtract eight zero)))
+     ;; 8
+     (match-define-values (`(,three) two-five)
+       (partition (flow (subset? one _)) two-three-five))
+     (match-define-values (`(,two) `(,five))
+       (partition (flow (set-member? _ C)) two-five))
+     ;; 9
+     (define E (set-first (set-subtract six five)))
+     ;; 10
+     (define B (set-first (set-subtract five three)))
+     ;; 11
+     (define G (set-first (set-subtract eight (set A B C D E F))))
+
+     (hash A 'a
+           B 'b
+           C 'c
+           D 'd
+           E 'e
+           F 'f
+           G 'g)]))
 
 (define-flow digits->number
   (~> sep (amp ~a) string-append string->number))
