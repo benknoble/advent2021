@@ -32,18 +32,28 @@
 (define-flow lines->notes (~>> (map line->note)))
 (define-flow file->notes (~> file->lines lines->notes))
 
+(define (find-pats-matching-count pats count)
+  (filter (flow (~> set-count (= count)))
+          pats))
+
+(define (find-pats-matching-digit pats digit)
+  (~>> (digit)
+       (hash-ref digit->wires)
+       set-count
+       (find-pats-matching-count pats)))
+
+(define (find-pats-matching-digits pats digits)
+  (append-map
+    (flow (find-pats-matching-digit pats _))
+    digits))
+
 (define (part1* notes)
-  (define unique-digits (list 1 4 7 8))
-  (define unique-lengths
-    (~> (unique-digits)
-        sep
-        (amp (~>> (hash-ref digit->wires) set-count))
-        set))
   (~> (notes)
       sep
       (amp (~> note-outputs sep))
-      (amp set-count)
-      (pass (~>> (set-member? unique-lengths)))
+      collect
+      (find-pats-matching-digits '(1 4 7 8))
+      sep
       (amp 1)
       +))
 (define-flow part1 (~> file->notes part1*))
