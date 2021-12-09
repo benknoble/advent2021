@@ -43,10 +43,8 @@
          (== (+ dx) (+ dy))
          cons
          (-< _ (hash-ref grid _ 9))
-         (if (~> (== (not (set-member? seen _))
-                     (and (< height _)
-                          (not (>= 9))))
-                 AND)
+         (if (and% (not (set-member? seen _))
+                   (and (< height _) (not (>= 9))))
            (~> (-< cons (~>> 1> (set-add seen)))
                (esc (basin-size* grid))
                (== (+ size) _))
@@ -57,9 +55,8 @@
       ((basin-size* grid) (set))
       1>))
 
-(define (basin-sizes grid)
-  (~>> (grid)
-       low-points
+(define-flow (basin-sizes grid)
+  (~>> low-points
        sep
        (amp (basin-size grid))
        collect))
