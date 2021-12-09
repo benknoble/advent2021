@@ -62,10 +62,9 @@
        collect))
 
 (define-flow (top3 xs)
-  (~> (-< (~> sep max) _)
-      (-< 1> (~> remove
-                (-< (~> sep max) _)
-                (-< 1> (~> remove sep max))))))
+  (~> (sort >)
+      (take 3)
+      sep))
 
 (define-flow part1*
   (~> lines->grid low-points sep (amp (~> cdr risk)) +))
