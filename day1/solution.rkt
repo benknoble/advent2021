@@ -8,10 +8,10 @@
   (~>> X (-< drop-right drop)
        (count <)))
 
-(define part1* (curry partn 1))
-(define part1 (compose1 part1* file->list))
-(define part2* (curry partn 3))
-(define part2 (compose1 part2* file->list))
+(define-flow part1* (partn 1 _))
+(define-flow part1 (~> file->list part1*))
+(define-flow part2* (partn 3 _))
+(define-flow part2 (~> file->list part2*))
 
 (module+ main
   (command-line
