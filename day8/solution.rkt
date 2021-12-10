@@ -31,19 +31,18 @@
 (define-flow lines->notes (~>> (map line->note)))
 (define-flow file->notes (~> file->lines lines->notes))
 
-(define (find-pats-matching-count pats count)
-  (filter (flow (~> set-count (= count)))
-          pats))
+(define-flow (find-pats-matching-count count pats)
+  (~> (== (clos (~> (== _ set-count) =)) sep)
+      pass
+      collect))
 
-(define (find-pats-matching-digit pats digit)
-  (~>> (digit)
-       (hash-ref digit->wires)
-       set-count
-       (find-pats-matching-count pats)))
+(define-flow (find-pats-matching-digit digit pats)
+  (~>> (== (~>> (hash-ref digit->wires) set-count) _)
+       find-pats-matching-count))
 
 (define (find-pats-matching-digits pats digits)
   (append-map
-    (flow (find-pats-matching-digit pats _))
+    (flow (find-pats-matching-digit _ pats))
     digits))
 
 (define (part1* notes)
@@ -83,10 +82,10 @@
      ;; 11. 8-{ABCDEF} tells us what maps to g.
 
      ;; 0
-     (match-define `(,one) (find-pats-matching-digit pats 1))
-     (match-define `(,four) (find-pats-matching-digit pats 4))
-     (match-define `(,seven) (find-pats-matching-digit pats 7))
-     (match-define `(,eight) (find-pats-matching-digit pats 8))
+     (match-define `(,one) (find-pats-matching-digit 1 pats))
+     (match-define `(,four) (find-pats-matching-digit 4 pats))
+     (match-define `(,seven) (find-pats-matching-digit 7 pats))
+     (match-define `(,eight) (find-pats-matching-digit 8 pats))
      ;; 1
      (define A (set-first (set-subtract seven one)))
      ;; 2
