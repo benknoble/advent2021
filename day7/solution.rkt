@@ -7,13 +7,23 @@
 (define-flow best-position-linear
   (median < _))
 
-(define-flow (cost-linear best posns)
-  (~> (== (clos (~> X - abs)) sep)
+(define-flow (dist p1 p2) (~> - abs))
+
+;; best -> posn -> cost
+(define-flow (coster-linear best)
+  (clos dist))
+
+(define-flow (coster-quad best)
+  (clos (~> dist (-< _ add1) * (/ 2))))
+
+;; (best -> posn -> cost) -> best -> posns -> cost
+(define-flow (cost coster best posns)
+  (~> (-< (~> (select 1 2) apply) ;; (coster best)
+          (~> 3> sep)) ;; posns
       amp +))
 
-(define-flow (cost-quad best posns)
-  (~> (== (clos (~> X - abs (-< _ add1) * (/ 2))) sep)
-      amp +))
+(define-flow (cost-linear best posns) (cost coster-linear __))
+(define-flow (cost-quad best posns) (cost coster-quad __))
 
 (define (best-position-quad posns)
   (~>> (posns)
