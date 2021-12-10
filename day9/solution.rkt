@@ -18,12 +18,15 @@
 
 (define-flow lines->grid (~> lines->rows rows->grid))
 
+(define-flow good-deltas?
+  (~> (and (not (all zero?)) (any zero?))))
+
 (define (low-points grid)
   (for/list ([(coord height) (in-hash grid)]
              #:when
              (for*/and ([dx (in-list '(-1 0 1))]
                         [dy (in-list '(-1 0 1))]
-                        #:when (~> (dx dy) (and (not (all zero?)) (any zero?))))
+                        #:when (good-deltas? dx dy))
                (~>> (coord)
                     (-< (~> car (+ dx))
                         (~> cdr (+ dy)))
@@ -38,7 +41,7 @@
               [seen seen])
     ([dx (in-list '(-1 0 1))]
      [dy (in-list '(-1 0 1))]
-     #:when (~> (dx dy) (and (not (all zero?)) (any zero?))))
+     #:when (good-deltas? dx dy))
     (~>> (x y)
          (== (+ dx) (+ dy))
          cons
