@@ -46,7 +46,7 @@
          (if (and% (not (set-member? seen _))
                    (and (< height _) (not (>= 9))))
            (~> (-< cons (~>> 1> (set-add seen)))
-               (esc (basin-size* grid))
+               (basin-size* grid)
                (== (+ size) _))
            (gen size seen)))))
 
