@@ -1,11 +1,15 @@
 #lang racket
 
-(require qi)
+(require qi
+         math/statistics)
 
 (define closers
   (hash #\) #\( #\> #\< #\} #\{ #\] #\[))
+(define openers
+  (for/hash ([(k v) (in-hash closers)])
+    (values v k)))
 
-;; string -> null? | char?
+;; string -> list? | char?
 (define ((make-checker closers) s)
   (define-values (opens closes)
     (~> (closers)
@@ -24,17 +28,37 @@
             [else 2>])
           '()))))
 
-(define scores (hash #\) 3 #\] 57 #\} 1197 #\> 25137))
+(define checker-scores (hash #\) 3 #\] 57 #\} 1197 #\> 25137))
 
 (define-flow part1*
   (~> sep
       (amp (make-checker closers))
       (pass char?)
-      (amp (hash-ref scores _))
+      (amp (hash-ref checker-scores _))
       +))
 (define-flow part1 (~> file->lines part1*))
+
+(define-flow incomplete?
+  (~> (make-checker closers)
+      (if (or char? null?) ground _)))
+
+(define complete-scores (hash #\) 1 #\] 2 #\} 3 #\> 4))
+
+(define-flow score-repair
+  (>> (~> (== (hash-ref complete-scores _) (* 5)) +)
+      0))
+
+(define-flow part2*
+  (~>> sep
+       ;; needs to be separate stage from below because grounds some inputs
+       (amp incomplete?)
+       (amp (~> sep (amp (hash-ref openers _)) score-repair))
+       collect
+       (median <)))
+(define-flow part2 (~> file->lines part2*))
 
 (module+ main
   (command-line
     #:args (input)
-    (displayln (time (part1 input)))))
+    (displayln (time (part1 input)))
+    (displayln (time (part2 input)))))
