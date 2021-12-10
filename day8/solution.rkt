@@ -52,8 +52,7 @@
       collect
       (find-pats-matching-digits '(1 4 7 8))
       sep
-      (amp 1)
-      +))
+      count))
 (define-flow part1 (~> file->notes part1*))
 
 (define solve-note
