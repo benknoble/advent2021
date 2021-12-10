@@ -57,8 +57,8 @@
 (define-flow part1
   (~> file->lines part1*))
 
+(define-flow (fieldth field) (clos (~> X list-ref)))
 (define (criterion-solver selector rows)
-  (define (fieldth field) (curryr list-ref field))
   (define (filterc field criterion rows)
     (define-flow matches (~> (fieldth field) (= criterion)))
     (filter matches rows))
