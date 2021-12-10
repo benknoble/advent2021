@@ -20,14 +20,13 @@
 
 (struct note [pats outputs] #:transparent)
 
-(define (line->note line)
-  (define-flow char->symbol (~> string string->symbol))
-  (define-flow string->symbols (~>> string->list sep (amp char->symbol) set))
-  (~> (line)
-       (string-split " | ")
-       sep
-       (amp (~>> string-split (map string->symbols)))
-       note))
+(define-flow char->symbol (~> string string->symbol))
+(define-flow string->symbols (~>> string->list sep (amp char->symbol) set))
+(define-flow (line->note line)
+  (~> (string-split " | ")
+      sep
+      (amp (~>> string-split (map string->symbols)))
+      note))
 
 (define-flow lines->notes (~>> (map line->note)))
 (define-flow file->notes (~> file->lines lines->notes))
