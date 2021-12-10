@@ -125,17 +125,19 @@
            G 'g)]))
 
 (define-flow digits->number
-  (~> sep (amp ~a) string-append string->number))
+  (~> (amp ~a) string-append string->number))
+
+(define-flow decoder
+  (clos (~>> (== (clos hash-ref) _)
+             X
+             set-map
+             sep set
+             (hash-ref wires->digit))))
 
 (define-flow (decode-note note)
-  (~> (-< (~> solve-note
-              (esc (λ (wire->wire)
-                     (flow
-                       (~> (set-map (flow (~>> (hash-ref wire->wire))))
-                           sep set
-                           (hash-ref wires->digit _))))))
-          note-outputs)
-      map
+  (~> (-< (~> solve-note decoder)
+          (~> note-outputs sep))
+      amp
       digits->number))
 
 (define-flow part2*
