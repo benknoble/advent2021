@@ -82,7 +82,16 @@
   (~> (stepN 100) 2>))
 (define-flow part1 (~> file->grid part1*))
 
+(define-flow part2*
+  (~> (-< _ 0 0)
+      (feedback (while (~> (-< (~> 1> hash-count) 2>) (not =)))
+                (then 3>)
+                (-< (~> 1> step)
+                    (~> 3> add1)))))
+(define-flow part2 (~> file->grid part2*))
+
 (module+ main
   (command-line
     #:args (input)
-    (displayln (time (part1 (input))))))
+    (displayln (time (part1 (input))))
+    (displayln (time (part2 (input))))))
