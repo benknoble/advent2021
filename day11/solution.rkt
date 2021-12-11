@@ -93,5 +93,5 @@
 (module+ main
   (command-line
     #:args (input)
-    (displayln (time (part1 (input))))
-    (displayln (time (part2 (input))))))
+    (displayln (time (part1 input)))
+    (displayln (time (part2 input)))))
