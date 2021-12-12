@@ -15,20 +15,19 @@
 
 (define (traverse caves visit? [path '("start")])
   (if (~> (path) car (equal? "end"))
-    (list path)
+    path
     (~>> (path)
          car
          (hash-ref caves) sep
          (pass (visit? path))
-         (amp (~>> (cons _ path) (traverse caves visit?) sep))
-         collect)))
+         (amp (~>> (cons _ path) (traverse caves visit?))))))
 
 (define-flow big?
   (~> 1> string->list sep (all char-upper-case?)))
 
 (define-flow part1*
   (~> (traverse (flow (or big? (not member))))
-      length))
+      count))
 (define-flow part1 (~> file->lines lines->caves part1*))
 
 (module+ main
