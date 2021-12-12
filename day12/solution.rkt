@@ -23,14 +23,26 @@
              (amp (~>> (cons _ path) (traverse caves visit?)))))))
 
 (define-flow big?
-  (~> 1> string->list sep (all char-upper-case?)))
+  (~> string->list sep (all char-upper-case?)))
 
 (define-flow part1*
-  (~> (traverse (flow (or big? (not member))))
+  (~> (traverse (flow (or (~> 1> big?) (not member))))
       count))
 (define-flow part1 (~> file->lines lines->caves part1*))
+
+(define-flow part2*
+  (~> (traverse (flow (switch
+                        [(~> 1> big?) #t]
+                        [(not member) #t]
+                        [(~> 1> (equal? "start")) #f]
+                        [else (~>> 2> sep (pass (not big?))
+                                   collect (group-by identity) sep
+                                   (none (~> length (= 2))))])))
+      count))
+(define-flow part2 (~> file->lines lines->caves part2*))
 
 (module+ main
   (command-line
     #:args (input)
-    (displayln (time (part1 input)))))
+    (displayln (time (part1 input)))
+    (displayln (time (part2 input)))))
