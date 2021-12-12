@@ -1,6 +1,7 @@
 #lang racket
 
-(require qi)
+(require qi
+         memoize)
 
 (define-flow lines->caves
   (~>> sep
@@ -30,14 +31,18 @@
       count))
 (define-flow part1 (~> file->lines lines->caves part1*))
 
+(define/memo (has-doubled? path)
+  (~>> (path)
+       sep (pass (not big?))
+       collect (group-by identity) sep
+       (none (~> length (= 2)))))
+
 (define-flow part2*
   (~> (traverse (flow (switch
                         [(~> 1> big?) #t]
                         [(not member) #t]
                         [(~> 1> (equal? "start")) #f]
-                        [else (~>> 2> sep (pass (not big?))
-                                   collect (group-by identity) sep
-                                   (none (~> length (= 2))))])))
+                        [else (~> 2> has-doubled?)])))
       count))
 (define-flow part2 (~> file->lines lines->caves part2*))
 
