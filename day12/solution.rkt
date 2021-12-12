@@ -14,13 +14,13 @@
 (define-flow file->caves (~> file->lines lines->caves))
 
 (define (traverse caves visit? [path '("start")])
-  (if (~> (path) car (equal? "end"))
-    path
-    (~>> (path)
-         car
-         (hash-ref caves) sep
-         (pass (visit? path))
-         (amp (~>> (cons _ path) (traverse caves visit?))))))
+  (~> (path)
+      (if (~> car (equal? "end"))
+        _
+        (~>> car
+             (hash-ref caves) sep
+             (pass (visit? path))
+             (amp (~>> (cons _ path) (traverse caves visit?)))))))
 
 (define-flow big?
   (~> 1> string->list sep (all char-upper-case?)))
