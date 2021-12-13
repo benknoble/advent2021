@@ -44,8 +44,7 @@
           sep set)]))
 
 (define (fold instructions points)
-  (~> (instructions) sep
-      (>> fold1 (gen points))))
+  (foldl fold1 points instructions))
 
 (define-flow part1*
   (~> X (== car _) fold1 set-count))
