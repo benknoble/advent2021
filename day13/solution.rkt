@@ -58,7 +58,7 @@
   (for ([y (in-range yh)])
     (for ([x (in-range xh)])
       (display (if (set-member? points (cons x y))
-                 #\#
+                 #\█
                  #\space)))
     (printf "\n")))
 
