@@ -50,7 +50,24 @@
   (~> X (== car _) fold1 set-count))
 (define-flow part1 (~> file->manual part1*))
 
+(define (display-points points)
+  (define-values (xh yh)
+    (~> (points) set->list sep
+        (-< (~> (amp car) max add1)
+            (~> (amp cdr) max add1))))
+  (for ([y (in-range yh)])
+    (for ([x (in-range xh)])
+      (display (if (set-member? points (cons x y))
+                 #\#
+                 #\space)))
+    (printf "\n")))
+
+(define-flow part2*
+  (~> X fold display-points))
+(define-flow part2 (~> file->manual part2*))
+
 (module+ main
   (command-line
     #:args (input)
-    (displayln (time (part1 input)))))
+    (displayln (time (part1 input)))
+    (displayln (time (part2 input)))))
