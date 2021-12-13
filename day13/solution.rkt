@@ -24,23 +24,20 @@
 (define x car)
 (define y cdr)
 
+(define (update-first n)
+  (flow (if (~> 1> (>= n))
+          (~> (== (~>> (- n) abs (- n)) _))
+          _)))
+
 (define (fold1 instruction points)
   (match instruction
     [`(x ,n)
       (~> (points)
-          (set-map (flow (if (~> x (>= n))
-                           (~> (-< (~>> x (- n) abs (- n))
-                                   y)
-                               cons)
-                           _)))
+          (set-map (flow (~> (-< x y) (update-first n) cons)))
           sep set)]
     [`(y ,n)
       (~> (points)
-          (set-map (flow (if (~> y (>= n))
-                           (~> (-< x
-                                   (~>> y (- n) abs (- n)))
-                               cons)
-                           _)))
+          (set-map (flow (~> (-< y x) (update-first n) X cons)))
           sep set)]))
 
 (define (fold instructions points)
