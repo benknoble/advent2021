@@ -43,8 +43,11 @@
 
 (define-flow (part1* pairs rules) (solve 10 __))
 (define-flow part1 (~> file->pairs+rules part1*))
+(define-flow part2* (solve 40 __))
+(define-flow part2 (~> file->pairs+rules part2*))
 
 (module+ main
   (command-line
     #:args (input)
-    (displayln (time (part1 input)))))
+    (displayln (time (part1 input)))
+    (displayln (time (part2 input)))))
