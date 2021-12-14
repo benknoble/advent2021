@@ -33,13 +33,15 @@
       (feedback n (-< step 2>))
       1>))
 
-(define-flow (part1* pairs rules)
-  (~>> (stepN 10)
+(define-flow (solve n pairs rules)
+  (~>> stepN
        recover-polymer
        (group-by identity)
        (map length) sep
        (-< max min)
        -))
+
+(define-flow (part1* pairs rules) (solve 10 __))
 (define-flow part1 (~> file->pairs+rules part1*))
 
 (module+ main
