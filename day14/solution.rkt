@@ -1,6 +1,7 @@
 #lang racket
 
-(require qi)
+(require qi
+         memoize)
 
 (define-flow recover-polymer
   (~> (-< caar (map cdr _)) cons))
@@ -13,31 +14,32 @@
                   (-< (drop-right 1) (drop 1))
                   (map cons))
              (~> (amp (~> (string-split " -> ") sep
-                          (== (~> string->list sep cons)
-                              (~> string->list car))))
+                          (== (~> string->list sep) (~> string->list car))
+                          (-< (~> (select 1 2) cons)
+                              (~> (-< (~> (select 1 3) cons)
+                                      (~> (select 3 2) cons))
+                                  list))))
                  hash))))
 (define-flow file->pairs+rules (~> file->lines lines->pairs+rules))
 
-(define (step pairs rules)
-  (append-map
-    (λ (p)
-      (define insert (hash-ref rules p p))
-      (~> (p)
-          (-< (~> car (cons insert))
-              (~> cdr (cons insert _)))
-          list))
-    pairs))
+(define/memo (stepN* n pairs rules)
+  (if (zero? n)
+    (for/fold ([counts (hash)])
+      ([pair (in-list pairs)])
+      (hash-update counts (cdr pair) add1 0))
+    (for*/fold ([counts (hash)])
+      ([pair (in-list pairs)]
+       [(seg k) (in-hash (stepN* (sub1 n) (hash-ref rules pair) rules))])
+      (hash-update counts seg (flow (+ k)) 0))))
 
 (define (stepN n pairs rules)
-  (~> (pairs rules)
-      (feedback n (-< step 2>))
-      1>))
+  (hash-update (stepN* n pairs rules)
+               (caar pairs)
+               add1 0))
 
 (define-flow (solve n pairs rules)
   (~>> stepN
-       recover-polymer
-       (group-by identity)
-       (map length) sep
+       hash-values sep
        (-< max min)
        -))
 
