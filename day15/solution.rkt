@@ -12,7 +12,7 @@
                 #:when (~> (dx dy) (and (not (all zero?)) (any zero?)))
                 [xy* (in-value (~> (x y) (== (+ dx) (+ dy)) cons))]
                 #:when (~> (xy*) (-< car cdr) (and (all (>= 0)) (all (< size)))))
-      (list (vector-ref weights (+ x (* size y)))
+      (list (vector-ref weights (xy->i size x y))
             xy* (cons x y)))))
 
 (define-flow (list->graph+size ns)
