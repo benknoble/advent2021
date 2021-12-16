@@ -3,6 +3,8 @@
 (require qi
          graph)
 
+(struct posn [x y] #:transparent)
+
 (define (make-directed-graph size weights)
   (weighted-graph/directed
     (for*/list ([y (in-range size)]
@@ -10,10 +12,10 @@
                 [dx (in-list '(-1 0 1))]
                 [dy (in-list '(-1 0 1))]
                 #:when (~> (dx dy) (and (not (all zero?)) (any zero?)))
-                [xy* (in-value (~> (x y) (== (+ dx) (+ dy)) cons))]
-                #:when (~> (xy*) (-< car cdr) (and (all (>= 0)) (all (< size)))))
+                [xy* (in-value (~> (x y) (== (+ dx) (+ dy)) posn))]
+                #:when (~> (xy*) (-< posn-x posn-y) (and (all (>= 0)) (all (< size)))))
       (list (vector-ref weights (xy->i size x y))
-            xy* (cons x y)))))
+            xy* (posn x y)))))
 
 (define-flow (list->graph+size ns)
   (~> (-< length
@@ -85,8 +87,8 @@
 
 (define (part1* g size)
   (~> (g)
-      (dijkstra _ (cons 0 0)) 1>
-      (hash-ref (cons (sub1 size) (sub1 size)))))
+      (dijkstra _ (posn 0 0)) 1>
+      (hash-ref (posn (sub1 size) (sub1 size)))))
 (define-flow part1 (~> file->graph+size part1*))
 (define part2* part1*)
 (define-flow part2 (~> file->big-graph+size part2*))
