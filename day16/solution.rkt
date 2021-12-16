@@ -1,7 +1,8 @@
 #lang racket
 
 (require qi
-         rebellion/binary/bitstring)
+         rebellion/binary/bitstring
+         rebellion/binary/bit)
 
 ;; necessary because (~> (string->number 16) (number->string 2)) does not
 ;; preserve left-padded 0s
@@ -34,8 +35,7 @@
 
 ;; version: 3
 ;; type: 3 (literal-value? operator?)
-;; not stored, because readable from data
-(struct packet [version #;type data] #:transparent)
+(struct packet [version type data] #:transparent)
 ;; groups of 5 bits:
 ;; 1xxxx (read next group, save xxxx)
 ;; 0xxxx (done, save xxxx)
@@ -55,13 +55,13 @@
 ;; -> packet? new-offset
 (define (decode packet-string [start 0])
   (define version (list->number (read-n-bits 3 packet-string start)))
-  (define type (read-n-bits 3 packet-string (+ 3 start)))
+  (define type (list->number (read-n-bits 3 packet-string (+ 3 start))))
   (define-values (data new-offset)
-    ((case (list->number type)
+    ((case type
        [(4) decode-literal]
        [else decode-operator])
      packet-string (+ 6 start)))
-  (values (packet version data) new-offset))
+  (values (packet version type data) new-offset))
 
 (define (decode-literal packet-string [start 0])
   (let loop ([acc null]
@@ -107,14 +107,32 @@
 
 (define sum-version
   (match-lambda
-    [(packet version (literal-value _)) version]
-    [(packet version (operator _ _ data))
+    [(packet version _ (literal-value _)) version]
+    [(packet version _ (operator _ _ data))
      (apply + version (map sum-version data))]))
 
 (define part1* sum-version)
 (define-flow part1 (~> file->packet-string decode 1> part1*))
 
+(define interpret
+  (match-lambda
+    [(packet _ _ (literal-value n)) n]
+    [(packet _ type (operator _ _ data))
+     (apply (case type
+              [(0) +]
+              [(1) *]
+              [(2) min]
+              [(3) max]
+              [(5) (flow (~> > boolean->bit))]
+              [(6) (flow (~> < boolean->bit))]
+              [(7) (flow (~> = boolean->bit))])
+            (map interpret data))]))
+
+(define part2* interpret)
+(define-flow part2 (~> file->packet-string decode 1> part2*))
+
 (module+ main
   (command-line
     #:args (input)
-    (displayln (time (part1 input)))))
+    (displayln (time (part1 input)))
+    (displayln (time (part2 input)))))
