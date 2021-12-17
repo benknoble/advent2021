@@ -49,10 +49,10 @@
   (define min-x*0
     (~> (X) (* 2) (+ 1/4) sqrt (- 1/2) exact-ceiling))
   (for/fold ([solns (set (exact X 1))])
-    ;; hack: double it to make sure we consider enough values for each x*0
-    ;; what we really want is a nested loop, and I'm too lazy to refactor this
-    ;; one
-    ([t-max (in-range (* 2 min-x*0) 0 -1)]
+    ;; hack: expand t-max range to make sure we consider enough values for each
+    ;; x*0 what we really want is a nested loop, and I'm too lazy to refactor
+    ;; this one
+    ([t-max (in-range (* 4 min-x*0) 0 -1)]
      [x*0 (in-naturals min-x*0)])
     (set-union solns
                (for/set ([t (in-range (add1 t-max))]
@@ -110,8 +110,10 @@
   (~> (-< (~> (== _ add1) / exact-floor)
           (~> 2> (/ 2) exact-floor))
       +
-      ;; hack, try a few values around the computed one
-      (-< (- 2) sub1 _ add1 (+ 2))
+      ;; hack, try lots of values around the computed one
+      (if zero?
+        (-< (- 2) sub1 _ add1 (+ 2))
+        (~> (* 2) (-< - _) (if > X _) (== _ add1) range sep))
       (amp
         (if (~> (y T) (= Y))
           set
@@ -177,7 +179,11 @@
       max))
 (define-flow part1 (~> file->xm-xM-ym-yM part1*))
 
+(define-flow part2* (~> solve set-count))
+(define-flow part2 (~> file->xm-xM-ym-yM part2*))
+
 (module+ main
   (command-line
     #:args (input)
-    (displayln (time (part1 input)))))
+    (displayln (time (part1 input)))
+    (displayln (time (part2 input)))))
