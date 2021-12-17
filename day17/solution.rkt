@@ -48,7 +48,7 @@
 (define (x-soln X)
   (define min-x*0
     (~> (X) (* 2) (+ 1/4) sqrt (- 1/2) exact-ceiling))
-  (for/fold ([solns (set)])
+  (for/fold ([solns (set (exact X 1))])
     ([t-max (in-range min-x*0 0 -1)]
      [x*0 (in-naturals min-x*0)])
     (set-union solns
@@ -126,30 +126,32 @@
 ;; valid(t, exact(_, t)).
 ;; valid(t, open(_, T)) :- t ≥ T.
 (define (y-soln Y xs)
-  (match xs
-    [(exact _ t) (y-soln-t Y t)]
-    [(open _ t)
-     ;; Notice that if y'0 is ever greater than -(1 + Y) (assuming Y ≤ 0), we
-     ;; can _never_ hit the Y. Why? Because the y-velocity at x=0, t>0 is
-     ;; exactly -(1 + y'0). The projectile would jump right over the Y.
-     ;;
-     ;; This is not to say that _every_ y'0 ≤ -(1 + Y) will work, but it
-     ;; does give us an upper bound for y'0.
-     ;;
-     ;; The lower bound is then 1 + Y ≤ y'0, for the same reason (except with
-     ;; x=0,t=0).
-     (for/fold ([s (set)])
-       ([y*0 (in-range (add1 Y) (add1 (- (add1 Y))))])
-       (set-union s (y-soln-y-t Y t y*0)))]))
+  (set-union
+    (set (list Y 1))
+    (match xs
+      [(exact _ t) (y-soln-t Y t)]
+      [(open _ t)
+       ;; Notice that if y'0 is ever greater than -(1 + Y) (assuming Y ≤ 0), we
+       ;; can _never_ hit the Y. Why? Because the y-velocity at x=0, t>0 is
+       ;; exactly -(1 + y'0). The projectile would jump right over the Y.
+       ;;
+       ;; This is not to say that _every_ y'0 ≤ -(1 + Y) will work, but it does
+       ;; give us an upper bound for y'0.
+       ;;
+       ;; The lower bound is then 1 + Y ≤ y'0, for the same reason (except with
+       ;; x=0,t=0).
+       (for/fold ([s (set)])
+         ([y*0 (in-range (add1 Y) (add1 (- (add1 Y))))])
+         (set-union s (y-soln-y-t Y t y*0)))])))
 
 (define-flow (y-max y*0)
   (~> (fanout 2) y))
 
 (define (solve xm xM ym yM)
-  (for*/list ([X (in-range xm (add1 xM))]
-              [xs (in-set (x-soln X))]
-              [Y (in-range ym (add1 yM))]
-              [yt (in-set (y-soln Y xs))])
+  (for*/set ([X (in-range xm (add1 xM))]
+             [xs (in-set (x-soln X))]
+             [Y (in-range ym (add1 yM))]
+             [yt (in-set (y-soln Y xs))])
     (list (match xs
             [(exact x*0 _) x*0]
             [(open x*0 _) x*0])
@@ -165,9 +167,9 @@
   (~> file->string string->xm-xM-ym-yM))
 
 (define-flow part1*
-  (~>> solve
-       (map (flow (~> sep 2> y-max))) sep
-       max))
+  (~> solve
+      (set-map (flow (~> sep 2> y-max))) sep
+      max))
 (define-flow part1 (~> file->xm-xM-ym-yM part1*))
 
 (module+ main
