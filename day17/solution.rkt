@@ -49,12 +49,15 @@
   (define min-x*0
     (~> (X) (* 2) (+ 1/4) sqrt (- 1/2) exact-ceiling))
   (for/fold ([solns (set (exact X 1))])
-    ([t-max (in-range min-x*0 0 -1)]
+    ;; hack: double it to make sure we consider enough values for each x*0
+    ;; what we really want is a nested loop, and I'm too lazy to refactor this
+    ;; one
+    ([t-max (in-range (* 2 min-x*0) 0 -1)]
      [x*0 (in-naturals min-x*0)])
     (set-union solns
                (for/set ([t (in-range (add1 t-max))]
                          #:when (~> (x*0 t) x (= X)))
-                 ((if (= t t-max) open exact)
+                 ((if (= t x*0) open exact)
                   x*0 t)))))
 
 ;; y(y'0, t) = y'0 * t - 1/2 * g * t^2
@@ -94,22 +97,26 @@
 ;; Let L = U_{(X,Y) in target} {(x'0,y'0,t) | xs ∈ (x-soln X), (y'0, t) ∈ (y-soln Y xs)};
 ;; Find max_{(x'0,y'0,t) ∈ L} (y-max y'0).
 
-;; want: given (Y, T), find {y'0 | ∃ T* ≥ t, y(y'0, T*) = Y}
+;; want: given (Y, T), find {y'0 | y(y'0, T) = Y}
 ;; Y = (1 + T) * y'0 - (1 + T) * T / 2
 ;; Y + (1 + T) * T / 2 = (1 + T) * y'0
 ;; (Y + (1 + T) * T / 2) / (1 + T) = y'0
 ;; Y / (1 + T) + T / 2 = y'0
 ;;
 ;; we use exact-floor to account for rounding
-;; still to double-check ourselves
+;; still need to double-check ourselves
 ;; this may fail on positive inputs, I'm not sure.
 (define-flow (y-soln-t Y T)
   (~> (-< (~> (== _ add1) / exact-floor)
           (~> 2> (/ 2) exact-floor))
       +
-      (if (~> (y T) (= Y))
-        (~> (list T) set)
-        (gen (set)))))
+      ;; hack, try a few values around the computed one
+      (-< (- 2) sub1 _ add1 (+ 2))
+      (amp
+        (if (~> (y T) (= Y))
+          set
+          (gen (set))))
+      set-union))
 
 ;; compute {t | t ≥ T, y(y'0, t) = Y}
 (define (y-soln-y-t Y T y*0)
@@ -118,7 +125,7 @@
     (define Y*? (y y*0 t))
     (cond
       [(< Y*? Y) s]
-      [(= Y*? Y) (loop (set-add s (list y*0 t))
+      [(= Y*? Y) (loop (set-add s y*0)
                        (add1 t))]
       [else (loop s (add1 t))])))
 
@@ -126,23 +133,22 @@
 ;; valid(t, exact(_, t)).
 ;; valid(t, open(_, T)) :- t ≥ T.
 (define (y-soln Y xs)
-  (set-union
-    (set (list Y 1))
-    (match xs
-      [(exact _ t) (y-soln-t Y t)]
-      [(open _ t)
-       ;; Notice that if y'0 is ever greater than -(1 + Y) (assuming Y ≤ 0), we
-       ;; can _never_ hit the Y. Why? Because the y-velocity at x=0, t>0 is
-       ;; exactly -(1 + y'0). The projectile would jump right over the Y.
-       ;;
-       ;; This is not to say that _every_ y'0 ≤ -(1 + Y) will work, but it does
-       ;; give us an upper bound for y'0.
-       ;;
-       ;; The lower bound is then 1 + Y ≤ y'0, for the same reason (except with
-       ;; x=0,t=0).
-       (for/fold ([s (set)])
-         ([y*0 (in-range (add1 Y) (add1 (- (add1 Y))))])
-         (set-union s (y-soln-y-t Y t y*0)))])))
+  (match xs
+    [(exact x*0 1) (set Y)]
+    [(exact _ t) (y-soln-t Y t)]
+    [(open _ t)
+     ;; Notice that if y'0 is ever greater than -(1 + Y) (assuming Y ≤ 0), we
+     ;; can _never_ hit the Y. Why? Because the y-velocity at x=0, t>0 is
+     ;; exactly -(1 + y'0). The projectile would jump right over the Y.
+     ;;
+     ;; This is not to say that _every_ y'0 ≤ -(1 + Y) will work, but it does
+     ;; give us an upper bound for y'0.
+     ;;
+     ;; The lower bound is then 1 + Y ≤ y'0, for the same reason (except with
+     ;; x=0,t=0).
+     (for/fold ([s (set)])
+       ([y*0 (in-range (add1 Y) (add1 (- (add1 Y))))])
+       (set-union s (y-soln-y-t Y t y*0)))]))
 
 (define-flow (y-max y*0)
   (~> (fanout 2) y))
@@ -151,12 +157,11 @@
   (for*/set ([X (in-range xm (add1 xM))]
              [xs (in-set (x-soln X))]
              [Y (in-range ym (add1 yM))]
-             [yt (in-set (y-soln Y xs))])
+             [y (in-set (y-soln Y xs))])
     (list (match xs
             [(exact x*0 _) x*0]
             [(open x*0 _) x*0])
-          (car yt)
-          (cadr yt))))
+          y)))
 
 (define-flow string->xm-xM-ym-yM
   (~> (string-split "=") sep
