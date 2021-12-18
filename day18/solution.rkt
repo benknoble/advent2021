@@ -136,7 +136,18 @@
   (~> add-reduce-many unflatten-elts magnitude))
 (define-flow part1 (~> file->nums part1*))
 
+(define-flow part2*
+  (~> collect
+      (fanout 2)
+      cartesian-product
+      sep
+      (pass (~> sep (not eq?)))
+      (amp (~> sep add-reduce unflatten-elts magnitude))
+      max))
+(define-flow part2 (~> file->nums part2*))
+
 (module+ main
   (command-line
     #:args (input)
-    (displayln (time (part1 input)))))
+    (displayln (time (part1 input)))
+    (displayln (time (part2 input)))))
