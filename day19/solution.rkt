@@ -14,6 +14,12 @@
   [((p x1 y1 z1) (p x2 y2 z2))
    (p (+ x1 x2) (+ y1 y2) (+ z1 z2))])
 
+(define/match (manhattan p1 p2)
+  [((p x1 y1 z1) (p x2 y2 z2))
+   (+ (abs (- x1 x2))
+      (abs (- y1 y2))
+      (abs (- z1 z2)))])
+
 ;; we almost want (combinations 2) instead of (fanout 2) cartesian-product, but
 ;; then the ability to find matching pairs is highly dependnent on ordering
 (define-flow (reld* ps)
@@ -147,6 +153,14 @@
        (map station-beacons) sep (amp sep)
        set))
 
+(define (max-distance ss)
+  (~>> (ss)
+       (map station-p)
+       (fanout 2)
+       cartesian-product sep
+       (amp (~> sep manhattan))
+       max))
+
 ;;;; experiments
 
 ;; (begin
@@ -181,13 +195,18 @@
 
 ;;;; runners
 
-(define-flow part1*
+(define-flow part1+2*
   (~>> (fix-all-ps 12)
-       unique-beacons
-       set-count))
-(define-flow part1 (~> file->string string->ss part1*))
+       (-< (~> unique-beacons set-count)
+           max-distance)))
+(define-flow part1+2 (~> file->string string->ss part1+2*))
 
 (module+ main
   (command-line
     #:args (input)
-    (displayln (time (part1 input)))))
+    (~>> (input)
+         list
+         (time-apply part1+2)
+         (-< (~>> (block 1) (format "cpu time: ~a real time: ~a gc time: ~a"))
+             (~> 1> sep))
+         (amp displayln))))
