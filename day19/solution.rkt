@@ -105,9 +105,8 @@
 
 (struct station-r [rotations] #:transparent)
 
-(define (make-station-r beacons)
-  (~>> (beacons)
-       (map rotate-beacon)
+(define-flow make-station-r
+  (~>> (map rotate-beacon)
        (apply map list)
        (map (flow (~> (-< #f _ reld*) station)))
        station-r))
@@ -148,14 +147,12 @@
 
   (map fix-beacons fixed-stations))
 
-(define (unique-beacons ss)
-  (~>> (ss)
-       (map station-beacons) sep (amp sep)
+(define unique-beacons
+  (~>> (map station-beacons) sep (amp sep)
        set))
 
-(define (max-distance ss)
-  (~>> (ss)
-       (map station-p)
+(define-flow max-distance
+  (~>> (map station-p)
        (fanout 2)
        cartesian-product sep
        (amp (~> sep manhattan))
