@@ -120,11 +120,17 @@
 
 (define (fix-all-ps overlap-needed s0 . srs)
   (define q (make-queue))
-  (for ([(sr i) (in-indexed (in-list srs))])
-    (enqueue! q (cons (add1 i) sr)))
+  (define candidates
+    ;; double duty:
+    ;; - compute candidates hash (idx -> set idx)
+    ;; - enqueue them
+    (for/hash ([(sr i) (in-indexed (in-list srs))])
+      (enqueue! q (cons (add1 i) sr))
+      (values (add1 i) (set 0))))
 
   (define fixed-stations
-    (let loop ([fixed (hash 0 s0)])
+    (let loop ([fixed (hash 0 s0)]
+               [candidates candidates])
       (cond
         [(queue-empty? q)
          (build-list (add1 (length srs))
@@ -132,18 +138,26 @@
         [else
           (define-values (i sr-to-try-to-fix) (~> (q) dequeue! (-< car cdr)))
           (define found
-            (for*/first ([s-to-try (station-r-rotations sr-to-try-to-fix)]
-                         [already-fixed (in-hash-values fixed)]
+            (for*/first ([(k already-fixed) (in-hash fixed)]
+                         #:when (set-member? (hash-ref candidates i) k)
+                         [s-to-try (station-r-rotations sr-to-try-to-fix)]
                          [offset (in-value (p-for-s-or-false overlap-needed already-fixed s-to-try))]
                          #:when offset)
-              (list s-to-try already-fixed offset)))
+                        (list s-to-try already-fixed offset)))
           (match found
             [(list s base offset)
              (define fixed-s (fix-p s offset (station-p base)))
-             (loop (hash-set fixed i fixed-s))]
+             (loop (hash-set fixed i fixed-s)
+                   ;; add i to all candidates
+                   (for/fold ([c candidates])
+                     ([k (in-hash-keys candidates)])
+                     (hash-update c k (flow (set-add i)))))]
             [#f
              (enqueue! q (cons i sr-to-try-to-fix))
-             (loop fixed)])])))
+             (loop fixed
+                   ;; remove all tried candidates for i
+                   (hash-update candidates i
+                                (flow (set-subtract (~> (fixed) hash-keys sep set)))))])])))
 
   (map fix-beacons fixed-stations))
 
