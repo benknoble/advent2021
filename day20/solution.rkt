@@ -36,18 +36,13 @@
 (define-flow pxs->bits (amp px->bit))
 (define-flow pxs->int (~> pxs->bits bits->integer))
 
-(define-flow extended-range
-  (~> (-< (~> min (- 2))
-          (~> max (+ 2)))
-      in-inclusive-range))
-
 (define (image-map-xs+ys f)
   (flow (~> hash-keys sep
             (-< (~> (amp car) f)
                 (~> (amp cdr) f)))))
 
 (define image->xs+ys (image-map-xs+ys (flow (~> (-< min max) in-inclusive-range))))
-(define image->ext-xs+ys (image-map-xs+ys extended-range))
+(define image->ext-xs+ys (image-map-xs+ys (flow (-< min max))))
 
 (define (display-image image)
   (define-values (xs ys) (image->xs+ys image))
@@ -69,11 +64,25 @@
        (hash-ref decoder)))
 
 (define (pad-image image bg)
-  (define-values (xs ys) (image->ext-xs+ys image))
-  (for*/hash ([x (in-stream xs)]
-              [y (in-stream ys)])
+  (define (update-with-pad image x y)
     (~> (x y) cons
-        (-< _ (hash-ref image _ bg)))))
+        (hash-set image _ bg)))
+  (define-values (xm xM ym yM) (image->ext-xs+ys image))
+  (define rectangles
+    (list (list (inclusive-range (- xm 2) (+ xM 2))
+                (inclusive-range (- ym 2) ym))
+          (list (inclusive-range (- xm 2) (+ xM 2))
+                (inclusive-range yM (+ yM 2)))
+          (list (inclusive-range (- xm 2) xm)
+                (inclusive-range (- ym 2) (+ yM 2)))
+          (list (inclusive-range xM (+ xM 2))
+                (inclusive-range (- ym 2) (+ yM 2)))))
+
+  (for*/fold ([image image])
+    ([rect (in-list rectangles)]
+     [x (in-list (car rect))]
+     [y (in-list (cadr rect))])
+    (update-with-pad image x y)))
 
 (define (enhance-image image decoder bg)
   (for/hash ([p (in-hash-keys (pad-image image bg))])
