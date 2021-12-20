@@ -92,12 +92,15 @@
   (~>> hash-values (count light?)))
 
 (define (count-light-n n)
-  (flow (~>> X (enhance-image-n n) count-light)))
+  (flow (~>> X (enhance-image-n n) (ε display-image count-light))))
 
 (define part1* (count-light-n 2))
 (define-flow part1 (~> file->decoder+image part1*))
+(define part2* (count-light-n 50))
+(define-flow part2 (~> file->decoder+image part2*))
 
 (module+ main
   (command-line
     #:args (input)
-    (displayln (time (part1 input)))))
+    (displayln (time (part1 input)))
+    (displayln (time (part2 input)))))
