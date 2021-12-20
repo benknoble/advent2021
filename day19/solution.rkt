@@ -147,7 +147,7 @@
 
   (map fix-beacons fixed-stations))
 
-(define unique-beacons
+(define-flow unique-beacons
   (~>> (map station-beacons) sep (amp sep)
        set))
 
