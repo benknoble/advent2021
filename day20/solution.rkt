@@ -2,8 +2,8 @@
 
 (require qi)
 
-(define-flow light? (equal? #\#))
-(define-flow dark? (equal? #\.))
+(define-flow light? (or (eq? 1) (eq? #\#)))
+(define-flow dark? (or (eq? 0) (eq? #\.)))
 
 (define (image-map-xs+ys f)
   (flow (~> hash-keys sep
@@ -17,7 +17,7 @@
   (define image
     (for*/hash ([(row y) (in-indexed rows)]
                 [(col x) (in-indexed (in-string row))])
-      (values (cons x y) col)))
+      (values (cons x y) (px->bit col))))
   (~> (image) (-< _ image->ext-xs+ys)))
 
 (define-flow string->image+decoder
@@ -32,19 +32,19 @@
       string-append
       (string->number 2)))
 
-(define-flow px->bit
-  (switch
-    [light? 1]
-    [dark? 0]))
+(define-switch px->bit
+  [light? 1]
+  [dark? 0])
 
-(define-flow pxs->bits (amp px->bit))
-(define-flow pxs->int (~> pxs->bits bits->integer))
+(define-switch bit->px
+  [light? #\#]
+  [dark? #\.])
 
 (define (display-image image)
   (define-values (xs ys) (image->xs+ys image))
   (for ([y ys])
     (for ([x xs])
-      (display (hash-ref image (cons x y))))
+      (display (bit->px (hash-ref image (cons x y)))))
     (newline)))
 
 (define (neighbors p)
@@ -56,8 +56,9 @@
   (~>> (p)
        neighbors sep
        (amp (hash-ref image _ bg))
-       pxs->int
-       (string-ref decoder)))
+       bits->integer
+       (string-ref decoder)
+       px->bit))
 
 (define (pad-image image xm xM ym yM bg)
   (define (update-with-pad image x y)
@@ -83,18 +84,18 @@
   (for/hash ([p (in-hash-keys (pad-image image xm xM ym yM bg))])
     (~> (p) (-< _ (enhance-p image decoder bg)))))
 
-(define-flow (compute-bg image decoder)
-  (~>> 1> (image-map-xs+ys min) cons (hash-ref image)))
+(define (compute-bg image xm ym decoder)
+  (hash-ref image (cons xm ym)))
 
 (define (enhance-image-n n decoder image xm xM ym yM)
-  (define image* (enhance-image image xm xM ym yM decoder #\.))
+  (define image* (enhance-image image xm xM ym yM decoder 0))
   (for/fold ([image image*]
              [xm (- xm 2)]
              [xM (+ xM 2)]
              [ym (- ym 2)]
              [yM (+ yM 2)])
     ([_ (in-range (sub1 n))])
-    (values (enhance-image image xm xM ym yM decoder (compute-bg image decoder))
+    (values (enhance-image image xm xM ym yM decoder (compute-bg image xm ym decoder))
             (- xm 2) (+ xM 2)
             (- ym 2) (+ yM 2))))
 
