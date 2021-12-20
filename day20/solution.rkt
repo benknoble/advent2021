@@ -5,12 +5,6 @@
 (define-flow light? (equal? #\#))
 (define-flow dark? (equal? #\.))
 
-(define-flow (make-decoder s)
-  (~>> string->list
-       (-< (~> length range) _)
-       (map cons)
-       make-immutable-hash))
-
 (define (image-map-xs+ys f)
   (flow (~> hash-keys sep
             (-< (~> (amp car) f)
@@ -28,7 +22,7 @@
 
 (define-flow string->image+decoder
   (~> (string-split "\n\n") sep
-      (== make-decoder
+      (== _
           (~> (string-split "\n") sep make-image))))
 (define-flow file->image+decoder
   (~> file->string string->image+decoder))
@@ -63,7 +57,7 @@
        neighbors sep
        (amp (hash-ref image _ bg))
        pxs->int
-       (hash-ref decoder)))
+       (string-ref decoder)))
 
 (define (pad-image image xm xM ym yM bg)
   (define (update-with-pad image x y)
