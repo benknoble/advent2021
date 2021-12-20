@@ -48,25 +48,13 @@
     ;; find matching reld's
     cartesian-product sep
     (pass (~> sep (amp caddr) equal?))
-    ;; reorganize so that
-    ;; (list (list p1 p2 rd) (list q1 q2 rd))
-    ;; becomes
-    ;; (list rd (list p1 p2) (list q1 q2))
-    (amp (~> (-< (~> car caddr)
-                 (~> sep (amp (drop-right 1))))
-             collect))
-    ;; pair up the extraneous solutions from cartesian product, *i.e.*,
-    ;; (list rd (list p1 p2) …) and
-    ;; (list -rd (list p2 p1) …)
-    collect
-    (group-by cadr _ (flow (or equal? (~> (== reverse _) equal?))))
-    sep
-    ;; drop the extraneous one
-    (amp car)
-    (if (~> count (>= overlap-needed))
+
+    ;; doubling accounts for the extraneous pairs from cartesian product (for
+    ;; each (list (list p1 p2 rd) (list q1 q2 rd))
+    ;; we have (list (list p2 p1 -rd) (list q2 q1 -rd))
+    (if (~> count (>= (* 2 overlap-needed)))
       ;; found a match, compute position of station relative to other station
-      (~> 1> (-< caadr caaddr)
-          reld)
+      (~> 1> (-< caar caadr) reld)
       ;; no match
       #f)))
 
