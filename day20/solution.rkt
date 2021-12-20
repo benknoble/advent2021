@@ -57,8 +57,8 @@
     (newline)))
 
 (define (neighbors p)
-  (for*/list ([dy (in-list '(-1 0 1))]
-              [dx (in-list '(-1 0 1))])
+  (for*/list ([dy (in-range -1 2)]
+              [dx (in-range -1 2)])
     (~> (p) (-< car cdr) (== (+ dx) (+ dy)) cons)))
 
 (define (enhance-p p image decoder bg)
@@ -70,8 +70,8 @@
 
 (define (pad-image image bg)
   (define-values (xs ys) (image->ext-xs+ys image))
-  (for*/hash ([x xs]
-              [y ys])
+  (for*/hash ([x (in-stream xs)]
+              [y (in-stream ys)])
     (~> (x y) cons
         (-< _ (hash-ref image _ bg)))))
 
