@@ -25,7 +25,7 @@
 (define-flow (reld* ps)
   (~> (fanout 2) cartesian-product sep
       (pass (~> sep (not eq?)))
-      (amp (~> sep (-< 1> reld) collect))
+      (amp (~> sep (-< reld 1>) collect))
       collect))
 
 (struct station [p beacons relds] #:transparent)
@@ -47,14 +47,14 @@
     (amp station-relds)
     ;; find matching reld's
     cartesian-product sep
-    (pass (~> sep (amp cadr) equal?))
+    (pass (~> sep (amp car) equal?))
 
     ;; doubling accounts for the extraneous pairs from cartesian product (for
-    ;; each (list (list p1 rd) (list q1 rd))
-    ;; we have (list (list p2 -rd) (list q2 -rd))
+    ;; each (list (list rd p1) (list rd q1))
+    ;; we have (list (list -rd p2) (list -rd q2))
     (if (~> count (>= (* 2 overlap-needed)))
       ;; found a match, compute position of station relative to other station
-      (~> 1> (-< caar caadr) reld)
+      (~> 1> (-< cadar cadadr) reld)
       ;; no match
       #f)))
 
