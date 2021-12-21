@@ -14,15 +14,14 @@ Fixpoint flatten t depth : flatT nat :=
   match t with
   | Leaf n => [{| a := n; depth := depth |}]
   | Node lef rig =>
-      (flatten lef (S depth)) ++
-      (flatten rig (S depth))
+      flatten lef (S depth) ++ flatten rig (S depth)
   end.
 
 Fixpoint collapse_stack' fuel stack :=
   match fuel with
   | O => stack
   | S n => match stack with
-           | {| a := x; depth := dx |}::{| a := y; depth := dy |}::t =>
+           | {| a := y; depth := dy |}::{| a := x; depth := dx |}::t =>
              if dx =? dy
              then collapse_stack' n ({| a := Node x y; depth := pred dx |}::t)
              else stack
@@ -44,33 +43,71 @@ Fixpoint unflatten' stack (elts: flatT nat) :=
 
 Definition unflatten := unflatten' [].
 
-Definition flatT_is_t {A}: flatT A → Prop.
+Example ex1:
+  unflatten (flatten (Node (Leaf 5) (Node (Node (Leaf 3) (Leaf 4)) (Leaf 6))) 0)
+  = Some (Node (Leaf 5) (Node (Node (Leaf 3) (Leaf 4)) (Leaf 6))).
+Proof. reflexivity. Qed.
+
+(* Definition flatT_is_t {A}: flatT A → Prop. *)
+(* Proof. *)
+(* Admitted. *)
+
+(* Lemma flatten_flatT_is_t t n: *)
+(*   flatT_is_t (flatten t n). *)
+(* Proof. *)
+(* Admitted. *)
+
+Lemma flatten_never_empty t d:
+  flatten t d ≠ [].
 Proof.
-Admitted.
+  generalize dependent d.
+  induction t as [ n | t1 IHt1 t2 _]; try easy. simpl.
+  intros d bogus.
+  destruct (app_eq_nil _ _ bogus) as [Ht1 _].
+  exact (IHt1 _ Ht1).
+Qed.
 
-Lemma flatten_flatT_is_t t n:
-  flatT_is_t (flatten t n).
+Lemma unflatten_app_flatten t1 t2 d:
+  unflatten (flatten (Node t1 t2) d) = Some (Node t1 t2).
 Proof.
-Admitted.
+  generalize dependent t2.
+  generalize dependent d.
+  induction t1; intros.
 
-Definition ojoin {A} (x : option (option A)) :=
-  match x with
-  | None => None
-  | Some x => x
-  end.
+  - cbn.
+    destruct_with_eqn (flatten t2 (S d)); simpl.
+    * destruct (flatten_never_empty _ _ Heqf).
+    * destruct e.
+      destruct t2.
+      + inversion Heqf; subst; cbn.
+        now destruct (Nat.eqb_spec d d).
+      +
+        (* simpl in Heqf. *)
+      (* not sure where to go here:
+       * we don't really know anything about the relationship between
+       * depth0 and S d, partly because we know so little about t2.
+       * Possibly something about the way t2_1 and a0/depth0 relate? *)
+        destruct (Nat.eqb_spec depth0 (S d)); subst; cbn.
+        -- contradict Heqf. admit.
+        -- 
+      admit.
+  - 
+    (* seems like I should be able to run
+     * the flatten part of (Node t11 t12) (with depth (S d))
+     * (IHt11 says we'll get Some (Node t11 t12))
+     * and then plug that in to the stuff about t2
+     * But we know nothing about t2, so probably I need some lemma there.
+     * The issue then is what lemma? Trying to look at
+     * unflatten (flatten t2 (S d)) isn't really different than the main inverse
+     * theorem, and looking at the one-hole context might not be either. *)
+    pose (IHt1_1 (S d) t1_2).
+    simpl.
+    admit.
 
-Definition ofmap {A B} (f: A → option B) (x: option A): option B :=
-  ojoin (option_map f x).
+  (* - destruct_with_eqn t2; cbn. *)
+  (*   * now destruct (Nat.eqb_spec d d). *)
+  (*   * *) 
 
-Lemma unflatten_app_flatten t1 t2 n:
-  unflatten (flatten t1 n ++ flatten t2 n)
-  =
-  ofmap (λ t1,
-    option_map (λ t2,
-      Node t1 t2)
-    (unflatten (flatten t2 n)))
-  (unflatten (flatten t1 n)).
-Proof.
   (* possibly using flatten_flatT_is_t somehow? *)
 Admitted.
 
@@ -80,9 +117,7 @@ Proof.
   generalize dependent n.
   induction t.
   - easy.
-  - intro n. cbn.
-    rewrite unflatten_app_flatten.
-    now rewrite IHt1, IHt2.
+  - now apply unflatten_app_flatten.
 Qed.
 
 Theorem inverse_flatten_unflatten f n:
