@@ -60,19 +60,23 @@
   (define p2-wins (make-fxvector 11))
 
   (define (play-p1 p1-pos p1-score p2-pos p2-score turn combs)
-    (for ([i (in-range 7)])
-      (define pos (~> (p1-pos) (unsafe-fx+ i 3) (unsafe-fxmodulo board-size)))
+    (for ([roll (in-vector rolls)]
+          [i (in-naturals)]
+          #:when (> roll 0))
+      (define pos (~> (p1-pos) (unsafe-fx+ i) (unsafe-fxmodulo board-size)))
       (define score (~> (p1-score) (unsafe-fx+ 1 pos)))
-      (define combs* (unsafe-fx* combs (unsafe-fxvector-ref rolls (unsafe-fx+ i 3))))
+      (define combs* (unsafe-fx* combs roll))
       (if (unsafe-fx>= score 21)
         (unsafe-fxvector-update! p1-wins turn (flow (unsafe-fx+ combs*)))
         (play-p2 pos score p2-pos p2-score turn combs*))))
 
   (define (play-p2 p1-pos p1-score p2-pos p2-score turn combs)
-    (for ([i (in-range 7)])
-      (define pos (~> (p2-pos) (unsafe-fx+ i 3) (unsafe-fxmodulo board-size)))
+    (for ([roll (in-vector rolls)]
+          [i (in-naturals)]
+          #:when (> roll 0))
+      (define pos (~> (p2-pos) (unsafe-fx+ i) (unsafe-fxmodulo board-size)))
       (define score (~> (p2-score) (unsafe-fx+ 1 pos)))
-      (define combs* (unsafe-fx* combs (unsafe-fxvector-ref rolls (unsafe-fx+ i 3))))
+      (define combs* (unsafe-fx* combs roll))
       (if (unsafe-fx>= score 21)
         (unsafe-fxvector-update! p2-wins turn (flow (unsafe-fx+ combs*)))
         (play-p1 p1-pos p1-score pos score (unsafe-fx+ 1 turn) combs*))))
