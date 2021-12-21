@@ -65,14 +65,14 @@
     (~> (x y) cons
         (hash-set image _ bg)))
   (define rectangles
-    (list (list (inclusive-range (- xm 1) (+ xM 1))
-                (inclusive-range (- ym 1) ym))
-          (list (inclusive-range (- xm 1) (+ xM 1))
-                (inclusive-range yM (+ yM 1)))
-          (list (inclusive-range (- xm 1) xm)
-                (inclusive-range (- ym 1) (+ yM 1)))
-          (list (inclusive-range xM (+ xM 1))
-                (inclusive-range (- ym 1) (+ yM 1)))))
+    (list (list (inclusive-range (sub1 xm) (add1 xM))
+                (inclusive-range (sub1 ym) ym))
+          (list (inclusive-range (sub1 xm) (add1 xM))
+                (inclusive-range yM (add1 yM)))
+          (list (inclusive-range (sub1 xm) xm)
+                (inclusive-range (sub1 ym) (add1 yM)))
+          (list (inclusive-range xM (add1 xM))
+                (inclusive-range (sub1 ym) (add1 yM)))))
 
   (for*/fold ([image image])
     ([rect (in-list rectangles)]
@@ -90,14 +90,14 @@
 (define (enhance-image-n n decoder image xm xM ym yM)
   (define image* (enhance-image image xm xM ym yM decoder 0))
   (for/fold ([image image*]
-             [xm (- xm 1)]
-             [xM (+ xM 1)]
-             [ym (- ym 1)]
-             [yM (+ yM 1)])
+             [xm (sub1 xm)]
+             [xM (add1 xM)]
+             [ym (sub1 ym)]
+             [yM (add1 yM)])
     ([_ (in-range (sub1 n))])
     (values (enhance-image image xm xM ym yM decoder (compute-bg image xm ym decoder))
-            (- xm 1) (+ xM 1)
-            (- ym 1) (+ yM 1))))
+            (sub1 xm) (add1 xM)
+            (sub1 ym) (add1 yM))))
 
 (define-flow count-light
   (~>> hash-values (count light?)))
