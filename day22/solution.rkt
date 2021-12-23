@@ -17,50 +17,64 @@
 
 (struct p [x y z] #:transparent)
 
-(define (all-ps keep? low hi)
-  (match-define `(,(p xl yl zl) ,(p xh yh zh)) (list low hi))
-  (for*/set ([x (in-inclusive-range xl xh)]
-             #:when (keep? x)
-             [y (in-inclusive-range yl yh)]
-             #:when (keep? y)
-             [z (in-inclusive-range zl zh)]
-             #:when (keep? z))
-    (p x y z)))
+;; with great applause to https://todd.ginsberg.com/post/advent-of-code/2021/day22/
+(define (r-intersects low1 hi1 low2 hi2)
+  (and (<= low1 hi2) (>= hi1 low2)))
 
-(define ((turn-on keep?) on low hi)
-  (set-union on (all-ps keep? low hi)))
+(define (r-intersect low1 hi1 low2 hi2)
+  (values (max low1 low2) (min hi1 hi2)))
 
-(define ((turn-off keep?) on low hi)
-  (set-subtract on (all-ps keep? low hi)))
+(define-flow c-intersects
+  (~> (amp (-< cadr caddr))
+      (and (~> (amp p-x) r-intersects)
+           (~> (amp p-y) r-intersects)
+           (~> (amp p-z) r-intersects))))
 
-;; keep? -> on on? low high -> on
-(define (flip keep?)
-  (flow (switch
-          (% 2> (block 2))
-          [(eq? 'on) (turn-on keep?)]
-          [(eq? 'off) (turn-off keep?)])))
+(define-flow c-intersect
+  (if c-intersects
+    (~> (-< (~> 1> car (switch
+                         [(eq? 'on) 'off]
+                         [(eq? 'off) 'on]))
+            (~> (amp (-< cadr caddr))
+                (-< (~> (amp p-x) r-intersect)
+                    (~> (amp p-y) r-intersect)
+                    (~> (amp p-z) r-intersect))
+                (-< (~> (select 1 3 5) p)
+                    (~> (select 2 4 6) p))))
+        collect)
+    #f))
 
-;; keep? -> step … -> on
-(define (flip* keep?)
-  (flow (>> (~> (-< 2> (~> 1> sep)) (flip keep?)) set)))
+(define-flow volume
+  (~> sep (-< (~> 1> (switch
+                       [(eq? 'on) 1]
+                       [(eq? 'off) -1]))
+              (~> (block 1)
+                  (-< (~> (amp p-x) X - add1)
+                      (~> (amp p-y) X - add1)
+                      (~> (amp p-z) X - add1))))
+      *))
 
-(define-flow keep-50 (<= -50 _ 50))
+(define (solve . cubes)
+  (for/fold ([volumes null]
+             #:result (~> (volumes) sep (amp volume) +))
+    ([cube (in-list cubes)])
+    (define to-add
+      (~> (volumes)
+          sep
+          (amp (c-intersect cube))
+          (pass _)
+          collect))
+    (if (~> (cube) car (eq? 'on))
+      (cons cube (append to-add volumes))
+      (append to-add volumes))))
 
-(module+ test
-  (require rackunit)
+(define cube50
+  (list 'on (p -50 -50 -50) (p 50 50 50)))
 
-  (define example
-    (list (list 'on (p 10 10 10) (p 12 12 12))
-          (list 'on (p 11 11 11) (p 13 13 13))
-          (list 'off (p 9 9 9) (p 11 11 11))
-          (list 'on (p 10 10 10) (p 10 10 10))))
-
-  (check-equal? 39 (~> (example) sep (flip* keep-50) set-count)))
-
-(define-flow part1* (~> (flip* keep-50) set-count))
+(define-flow part1* (~> (pass (c-intersects cube50)) solve))
 (define-flow part1 (~> file->steps part1*))
 
-(define-flow part2* (~> (flip* identity) set-count))
+(define-flow part2* solve)
 (define-flow part2 (~> file->steps part2*))
 
 (module+ main
