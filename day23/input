@@ -3,3 +3,72 @@
 ###B#C#A#B###
   #C#D#D#A#
   #########
+
+The minimum we can spend on C&D here is 14200. To do that, we have to move the B
+and AA on the right side out of the way, so we spend slightly more than the
+minimum on them, which is still "best" because spending the minimum on A&B would
+incur greater costs on C&D.
+
+Minimum A: 16
+Minimum B: 120
+
+My solution: 150 over the C&D minimum, "wasting" only 14 energy relative to a
+theoretical minimum if everyone takes the least number of steps.
+
+---
+
+6
+
+#############
+#.A.........#
+###B#C#.#B###
+  #C#D#D#A#
+  #########
+
+6 + 6*10 = 66
+
+#############
+#.A.B.......#
+###B#C#.#.###
+  #C#D#D#A#
+  #########
+
+66 + 3 = 69
+
+#############
+#.A.B.....A.#
+###B#C#.#.###
+  #C#D#D#.#
+  #########
+
+69 + 6*1000 + 5*100 + 7*1000 = 13569
+
+#############
+#.A.B.....A.#
+###B#.#.#D###
+  #C#.#C#D#
+  #########
+
+13569 + 3*10 + 4*10 = 13639
+
+#############
+#.A.......A.#
+###.#B#.#D###
+  #C#B#C#D#
+  #########
+
+13639 + 7*100 = 14339
+
+#############
+#.A.......A.#
+###.#B#C#D###
+  #.#B#C#D#
+  #########
+
+14339 + 3 + 8 = 14350
+
+#############
+#...........#
+###A#B#C#D###
+  #A#B#C#D#
+  #########
