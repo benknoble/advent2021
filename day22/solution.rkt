@@ -60,7 +60,11 @@
 (define-flow part1* (~> (flip* keep-50) set-count))
 (define-flow part1 (~> file->steps part1*))
 
+(define-flow part2* (~> (flip* identity) set-count))
+(define-flow part2 (~> file->steps part2*))
+
 (module+ main
   (command-line
     #:args (input)
-    (displayln (time (part1 input)))))
+    (displayln (time (part1 input)))
+    (displayln (time (part2 input)))))
