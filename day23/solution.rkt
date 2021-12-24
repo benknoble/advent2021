@@ -179,10 +179,27 @@
 (define-flow file->state
   (~> file->lines sep lines->state))
 
+(define make-state2
+  (let ([extra
+          (set
+            (room 'D 'A 2) (room 'C 'B 2) (room 'B 'C 2) (room 'A 'D 2)
+            (room 'D 'A 3) (room 'B 'B 3) (room 'A 'C 3) (room 'C 'D 3))])
+    (match-lambda
+      [(state 2 creatures)
+       (define creatures*
+         (for/set ([c (in-set creatures)])
+           (if (~> (c) room-n (= 2))
+             (struct-copy room c [n 4])
+             c)))
+       (state 4 (set-union creatures* extra))])))
+
 (define part1* solve)
 (define-flow part1 (~> file->state part1*))
+(define-flow part2* (~> make-state2 solve))
+(define-flow part2 (~> file->state part2*))
 
 (module+ main
   (command-line
     #:args (input)
-    (displayln (time (part1 input)))))
+    (displayln (time (part1 input)))
+    (displayln (time (part2 input)))))
