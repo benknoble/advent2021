@@ -34,16 +34,18 @@
        (set-subtract (~> (hall-length) range sep set) disallowed-halls)
        set->list))
 
-(define (room-open? s type)
-  (~> (s) state-creatures-v
-      (pass (and room? (~> room-type (eq? type))))
+(define-flow (cs-in-room s t)
+  (~> 1> state-creatures-v
+      (pass (and room? (~> room-type (eq? t))))))
+
+(define-flow (room-open? s type)
+  (~> cs-in-room
       (and (~> (amp room-n) set
                (not (set=? (~> (s) state-room-size range sep (amp add1) set))))
            (all (~> (-< room-c room-type) eq?)))))
 
-(define (spots-in-room s type)
-  (~>> (s) state-creatures-v
-       (pass (and room? (~> room-type (eq? type))))
+(define-flow (spots-in-room s type)
+  (~>> cs-in-room
        (amp room-n) set
        (set-subtract (~> (s) state-room-size range sep (amp add1) set))
        set->list))
@@ -75,14 +77,12 @@
   (define occupied (occupied-in-hall s))
   (match-lambda
     [(move (room _ t n) (room _ ot _))
-     (or (~> (s) state-creatures-v
-             (pass (and room? (~> room-type (eq? t))))
+     (or (~> (s) (cs-in-room t)
              (any (~> room-n (< n))))
          (~> (t ot) (amp (hash-ref entrances _))
              (blocked-in-hall? occupied)))]
     [(move (room _ t n) (hall _ h))
-     (or (~> (s) state-creatures-v
-             (pass (and room? (~> room-type (eq? t))))
+     (or (~> (s) (cs-in-room t)
              (any (~> room-n (< n))))
          (~> (t h) (== (hash-ref entrances _) _)
              (blocked-in-hall? occupied)))]
@@ -93,8 +93,7 @@
 (define (moves-for s)
   (match-lambda
     [(and C (room c c n))
-     (if (~> (s) state-creatures-v
-             (pass (and room? (~> room-type (eq? c))))
+     (if (~> (s) (cs-in-room c)
              ;; things below me are not me
              (any (and (~> room-n (> n)) (not (~> room-c (eq? c))))))
        (map (flow (~>> (hall c) (move C)))
