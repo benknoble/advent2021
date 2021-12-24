@@ -80,13 +80,11 @@
   (define occupied (occupied-in-hall s))
   (match-lambda
     [(move (room _ t n) (room _ ot _))
-     (or (~> (s) (cs-in-room t)
-             (any (~> room-n (< n))))
+     (or (~> (s) (cs-in-room t) (any (~> room-n (< n))))
          (~> (t ot) (amp (hash-ref entrances _))
              (blocked-in-hall? occupied)))]
     [(move (room _ t n) (hall _ h))
-     (or (~> (s) (cs-in-room t)
-             (any (~> room-n (< n))))
+     (or (~> (s) (cs-in-room t) (any (~> room-n (< n))))
          (~> (t h) (== (hash-ref entrances _) _)
              (blocked-in-hall? occupied)))]
     [(move (hall _ h) (room _ t _))
@@ -96,17 +94,15 @@
 (define (moves-for s)
   (match-lambda
     [(and C (room c c n))
-     (if (~> (s) (cs-in-room c)
-             ;; things below me are not me
-             (any (and (~> room-n (> n)) (not (~> room-c (eq? c))))))
-       (map (flow (~>> (hall c) (move C)))
-            (spots-in-hall s))
+     ;; things below me are not me
+     (if (~> (s) (cs-in-room c) (any (and (~> room-n (> n))
+                                          (not (~> room-c (eq? c))))))
+       (map (flow (~>> (hall c) (move C))) (spots-in-hall s))
        null)]
     [(and C (room c _ _))
      (if (room-open? s c)
        (list (move C (room c c (apply max (spots-in-room s c)))))
-       (map (flow (~>> (hall c) (move C)))
-            (spots-in-hall s)))]
+       (map (flow (~>> (hall c) (move C))) (spots-in-hall s)))]
     [(and C (hall c _))
      (if (room-open? s c)
        (list (move C (room c c (apply max (spots-in-room s c)))))
