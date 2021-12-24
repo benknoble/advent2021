@@ -98,10 +98,8 @@
             (spots-in-hall s))
        null)]
     [(and C (room c _ _))
-     (append
-       (if (room-open? s c)
-         (list (move C (room c c (apply max (spots-in-room s c)))))
-         null)
+     (if (room-open? s c)
+       (list (move C (room c c (apply max (spots-in-room s c)))))
        (map (flow (~>> (hall c) (move C)))
             (spots-in-hall s)))]
     [(and C (hall c _))
