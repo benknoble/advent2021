@@ -38,16 +38,19 @@
   (~> 1> state-creatures-v
       (pass (and room? (~> room-type (eq? t))))))
 
+(define-flow room-numbers
+  (~> state-room-size range sep (amp add1) set))
+
 (define-flow (room-open? s type)
   (~> cs-in-room
       (and (~> (amp room-n) set
-               (not (set=? (~> (s) state-room-size range sep (amp add1) set))))
+               (not (set=? (room-numbers s))))
            (all (~> (-< room-c room-type) eq?)))))
 
 (define-flow (spots-in-room s type)
   (~>> cs-in-room
        (amp room-n) set
-       (set-subtract (~> (s) state-room-size range sep (amp add1) set))
+       (set-subtract (room-numbers s))
        set->list))
 
 ;; #############
