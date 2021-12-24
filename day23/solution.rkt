@@ -16,12 +16,15 @@
 (define disallowed-halls (~> (entrances) hash-values sep set))
 (define hall-length 11)
 
+(define-flow state-creatures-v
+  (~> state-creatures set->list sep))
+
 (define-flow organized?
-  (~> state-creatures set->list sep
+  (~> state-creatures-v
       (all (and room? (~> (-< room-c room-type) eq?)))))
 
 (define-flow (occupied-in-hall s)
-  (~> state-creatures set->list sep
+  (~> state-creatures-v
       (pass hall?)
       (amp hall-h)
       set))
@@ -32,14 +35,14 @@
        set->list))
 
 (define (room-open? s type)
-  (~> (s) state-creatures set->list sep
+  (~> (s) state-creatures-v
       (pass (and room? (~> room-type (eq? type))))
       (and (~> (amp room-n) set
                (not (set=? (~> (s) state-room-size range sep (amp add1) set))))
            (all (~> (-< room-c room-type) eq?)))))
 
 (define (spots-in-room s type)
-  (~>> (s) state-creatures set->list sep
+  (~>> (s) state-creatures-v
        (pass (and room? (~> room-type (eq? type))))
        (amp room-n) set
        (set-subtract (~> (s) state-room-size range sep (amp add1) set))
@@ -72,13 +75,13 @@
   (define occupied (occupied-in-hall s))
   (match-lambda
     [(move (room _ t n) (room _ ot _))
-     (or (~> (s) state-creatures set->list sep
+     (or (~> (s) state-creatures-v
              (pass (and room? (~> room-type (eq? t))))
              (any (~> room-n (< n))))
          (~> (t ot) (amp (hash-ref entrances _))
              (blocked-in-hall? occupied)))]
     [(move (room _ t n) (hall _ h))
-     (or (~> (s) state-creatures set->list sep
+     (or (~> (s) state-creatures-v
              (pass (and room? (~> room-type (eq? t))))
              (any (~> room-n (< n))))
          (~> (t h) (== (hash-ref entrances _) _)
@@ -90,7 +93,7 @@
 (define (moves-for s)
   (match-lambda
     [(and C (room c c n))
-     (if (~> (s) state-creatures set->list sep
+     (if (~> (s) state-creatures-v
              (pass (and room? (~> room-type (eq? c))))
              ;; things below me are not me
              (any (and (~> room-n (> n)) (not (~> room-c (eq? c))))))
