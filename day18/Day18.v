@@ -67,6 +67,13 @@ Proof.
   exact (IHt1 _ Ht1).
 Qed.
 
+(* Somehow I need to characterize the stack:
+ * any flatT nat that forms a binary tree should collapse to a single-element on
+ * the stack, and therefore any two flatT nat that form a single binary tree
+ * should collapse first to [t1, t2] on the stack and then finally to [Node t1
+ * t2].
+ *)
+
 Lemma unflatten_app_flatten t1 t2 d:
   unflatten (flatten (Node t1 t2) d) = Some (Node t1 t2).
 Proof.
