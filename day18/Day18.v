@@ -26,7 +26,7 @@ Function collapse_stack stack {measure length stack} :=
   | _ => stack
   end.
 Proof.
-  constructor.
+  auto.
 Defined.
 
 (* Check collapse_stack_equation. *)
