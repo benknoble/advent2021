@@ -59,11 +59,6 @@ Qed.
 (* Proof. *)
 (* Admitted. *)
 
-(* Lemma flatten_flatT_is_t t n: *)
-(*   flatT_is_t (flatten t n). *)
-(* Proof. *)
-(* Admitted. *)
-
 Lemma flatten_never_empty t d:
   flatten t d ≠ [].
 Proof.
@@ -73,6 +68,11 @@ Proof.
   destruct (app_eq_nil _ _ bogus) as [Ht1 _].
   exact (IHt1 _ Ht1).
 Qed.
+
+(* Lemma flatten_flatT_is_t t n: *)
+(*   flatT_is_t (flatten t n). *)
+(* Proof. *)
+(* Admitted. *)
 
 (* Somehow I need to characterize the stack:
  * any flatT nat that forms a binary tree should collapse to a single-element on
