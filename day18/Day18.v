@@ -1,4 +1,4 @@
-Require Import Arith List Utf8.
+Require Import Arith Recdef List Utf8.
 Import ListNotations.
 
 Inductive t :=
@@ -17,19 +17,20 @@ Fixpoint flatten t depth : flatT nat :=
       flatten lef (S depth) ++ flatten rig (S depth)
   end.
 
-Fixpoint collapse_stack' fuel stack :=
-  match fuel with
-  | O => stack
-  | S n => match stack with
-           | {| a := y; depth := dy |}::{| a := x; depth := dx |}::t =>
-             if dx =? dy
-             then collapse_stack' n ({| a := Node x y; depth := pred dx |}::t)
-             else stack
-           | _ => stack
-           end
+Function collapse_stack stack {measure length stack} :=
+  match stack with
+  | {| a := y; depth := dy |}::{| a := x; depth := dx |}::t =>
+    if dx =? dy
+    then collapse_stack ({| a := Node x y; depth := pred dx |}::t)
+    else stack
+  | _ => stack
   end.
+Proof.
+  constructor.
+Defined.
 
-Definition collapse_stack stack := collapse_stack' (length stack) stack.
+(* Check collapse_stack_equation. *)
+(* Check collapse_stack_ind. *)
 
 Fixpoint unflatten' stack (elts: flatT nat) :=
   match elts with
@@ -46,7 +47,13 @@ Definition unflatten := unflatten' [].
 Example ex1:
   unflatten (flatten (Node (Leaf 5) (Node (Node (Leaf 3) (Leaf 4)) (Leaf 6))) 0)
   = Some (Node (Leaf 5) (Node (Node (Leaf 3) (Leaf 4)) (Leaf 6))).
-Proof. reflexivity. Qed.
+Proof.
+  reflexivity.
+  (* With 'Qed' instead of 'Defined' in collapse_stack,
+   * reflexivity is no longer enough, as the computation is opaque. So we
+   * rewrite where we can and collapse (this computes the result). *)
+  (* now repeat (repeat rewrite collapse_stack_equation; cbn). *)
+Qed.
 
 (* Definition flatT_is_t {A}: flatT A → Prop. *)
 (* Proof. *)
