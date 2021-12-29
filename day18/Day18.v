@@ -35,7 +35,7 @@ Defined.
 Fixpoint unflatten' stack (elts: flatT nat) :=
   match elts with
   | [] => match stack with
-          | [s] => Some (a s)
+          | s::_ => Some (a s)
           | _ => None
           end
   | {| a := n; depth := d |}::t =>
@@ -93,6 +93,65 @@ Lemma flatten_flatT_is_t t n:
 Proof.
   generalize dependent n.
   induction t; intros; simpl; constructor; auto.
+Qed.
+
+Lemma unflatten_app_lef lef rig d x:
+  flatT_is_t d lef →
+  unflatten lef = Some x →
+  unflatten (lef ++ rig) = unflatten' [{| a := x; depth := d |}] rig.
+Proof.
+  intro H.
+  generalize dependent rig.
+  (* generalize dependent d. *)
+  generalize dependent x.
+  induction H; intros.
+  - unfold unflatten in *; cbn in *.
+    now inversion H.
+  - unfold unflatten in *; cbn in *.
+    (* clear IHflatT_is_t2. *)
+    rewrite <- app_assoc.
+    (* If I can find an XXX such that
+       unflatten' [] lef = Some XXX
+     * (there is one, by H1, somehow…), then I can use IHflatT_is_t1 to collapse
+     * the goal a bit to
+
+       unflatten' [{…}] (rig ++ rig0) =
+       unflatten' [{| a := x; depth := d |}] rig0
+
+     * Then it will be _very_ close in shape to IHflatT_is_t2.
+     * Then I need a YYY such that
+       unflatten' [] rig = Some YYY
+     * (there is one, by H1, somehow…). Then can I use IHflatT_is_t2 somehow?
+     *
+     * Perhaps instead of unflatten I can use (unflatten' s) for any s?
+     *)
+    admit.
+Admitted.
+
+Lemma unflatten_rig rig y d x:
+  flatT_is_t d rig →
+  unflatten rig = Some y →
+  unflatten' [{| a := x; depth := d |}] rig = Some (Node x y).
+Proof.
+Admitted.
+
+Theorem unflatten'_flatT ft d:
+  flatT_is_t d ft →
+  (* ∀ s, option_map (depth t) (hd_error s) ≠ Some d → *)
+  ∃ tr, unflatten ft = Some tr.
+Proof.
+  intros H. induction H.
+  - now exists (Leaf x).
+    (* destruct s; simpl; [ easy | ]. *)
+    (* destruct e as [y dep]. *)
+    (* rewrite collapse_stack_equation. *)
+    (* assert (dep ≠ d) by (now intros ->); clear H. *)
+    (* destruct (Nat.eqb_spec dep d); easy. *)
+  - destruct IHflatT_is_t1 as [x Hx].
+    destruct IHflatT_is_t2 as [y Hy]. (* note it starts from the empty stack *)
+    exists (Node x y).
+    rewrite (unflatten_app_lef _ _ (S d) x); auto.
+    now apply unflatten_rig.
 Qed.
 
 (* Somehow I need to characterize the stack:
