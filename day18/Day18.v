@@ -55,9 +55,28 @@ Proof.
   (* now repeat (repeat rewrite collapse_stack_equation; cbn). *)
 Qed.
 
-(* Definition flatT_is_t {A}: flatT A → Prop. *)
-(* Proof. *)
-(* Admitted. *)
+Inductive flatT_is_t {A}: nat → flatT A → Prop :=
+  | flat_leaf d x: flatT_is_t d [{| a := x; depth := d |}]
+  | flat_node d lef rig:
+      flatT_is_t (S d) lef →
+      flatT_is_t (S d) rig →
+      flatT_is_t d (lef ++ rig)
+.
+
+Example ex2:
+  flatT_is_t 2 [{| a := 3; depth := 3 |}; {| a := 4; depth := 3 |}].
+Proof.
+  apply (flat_node _ [{| a := 3; depth := 3 |}] _); constructor.
+Qed.
+
+Example ex3:
+  flatT_is_t 0 (flatten (Node (Leaf 5) (Node (Node (Leaf 3) (Leaf 4)) (Leaf 6))) 0).
+Proof.
+  simpl.
+  apply (flat_node _ [_] _); try constructor.
+  apply (flat_node _ [_; _] _); try constructor.
+  apply (flat_node _ [_] _); constructor.
+Qed.
 
 Lemma flatten_never_empty t d:
   flatten t d ≠ [].
@@ -69,10 +88,12 @@ Proof.
   exact (IHt1 _ Ht1).
 Qed.
 
-(* Lemma flatten_flatT_is_t t n: *)
-(*   flatT_is_t (flatten t n). *)
-(* Proof. *)
-(* Admitted. *)
+Lemma flatten_flatT_is_t t n:
+  flatT_is_t n (flatten t n).
+Proof.
+  generalize dependent n.
+  induction t; intros; simpl; constructor; auto.
+Qed.
 
 (* Somehow I need to characterize the stack:
  * any flatT nat that forms a binary tree should collapse to a single-element on
