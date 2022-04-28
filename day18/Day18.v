@@ -98,7 +98,11 @@ Qed.
 Lemma unflatten_app_lef lef rig d x:
   flatT_is_t d lef →
   unflatten lef = Some x →
-  unflatten (lef ++ rig) = unflatten' [{| a := x; depth := d |}] rig.
+  (* unflatten (lef ++ rig) = unflatten' [{| a := x; depth := d |}] rig. *)
+  (∀ s,
+    unflatten' s (lef ++ rig)
+    =
+    unflatten' (collapse_stack ({| a := x; depth := d |}::s)) rig).
 Proof.
   intro H.
   generalize dependent rig.
@@ -125,6 +129,20 @@ Proof.
      *
      * Perhaps instead of unflatten I can use (unflatten' s) for any s?
      *)
+
+    assert (∃ XXX, unflatten' [] lef = Some XXX) by admit.
+    destruct H2.
+    specialize (IHflatT_is_t1 _ (rig ++ rig0) H2).
+    rewrite IHflatT_is_t1 in *; clear IHflatT_is_t1.
+
+    assert (∃ YYY, unflatten' [] rig = Some YYY) by admit.
+    destruct H3.
+    specialize (IHflatT_is_t2 _ rig0 H3).
+    rewrite IHflatT_is_t2 in *; clear IHflatT_is_t2.
+
+    (* so close! I would need to relate the dummy XXX and YYY to x in H1 and
+     * somehow deal with the collapse_stack on an arbitrary s *)
+
     admit.
 Admitted.
 
@@ -150,6 +168,7 @@ Proof.
   - destruct IHflatT_is_t1 as [x Hx].
     destruct IHflatT_is_t2 as [y Hy]. (* note it starts from the empty stack *)
     exists (Node x y).
+    unfold unflatten.
     rewrite (unflatten_app_lef _ _ (S d) x); auto.
     now apply unflatten_rig.
 Qed.
