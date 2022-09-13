@@ -17,6 +17,43 @@ Fixpoint flatten t depth : flatT nat :=
       flatten lef (S depth) ++ flatten rig (S depth)
   end.
 
+Fixpoint t_fold {A} (t: t) (f: nat → A) (g: A → A → A): A :=
+  match t with
+  | Leaf n => f n
+  | Node lef rig => g (t_fold lef f g) (t_fold rig f g)
+  end.
+
+Definition inc_depth {A} (e: elt A): elt A :=
+  {| a := (a e); depth := S (depth A e) |}.
+
+Definition flatten_fold t depth : flatT nat :=
+  t_fold t
+  (λ n, [{| a := n; depth := depth |}])
+  (λ lef rig, (map inc_depth lef) ++ (map inc_depth rig)).
+
+Lemma flatten_S_d t d:
+  flatten t (S d) = map inc_depth (flatten t d).
+Proof.
+  generalize dependent d.
+  induction t; intros; [ easy | ].
+  simpl.
+  rewrite map_app.
+  now rewrite <- IHt1, <- IHt2.
+Qed.
+
+Lemma flatten_fold_flatten t d:
+  flatten t d = flatten_fold t d.
+Proof.
+  generalize dependent d.
+  induction t; intros; [ easy | ].
+  unfold flatten_fold.
+  simpl.
+  fold (flatten_fold t1 d).
+  fold (flatten_fold t2 d).
+  rewrite <- IHt1, <- IHt2.
+  now repeat rewrite <- flatten_S_d.
+Qed.
+
 Function collapse_stack stack {measure length stack} :=
   match stack with
   | {| a := y; depth := dy |}::{| a := x; depth := dx |}::t =>
