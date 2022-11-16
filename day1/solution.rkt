@@ -4,13 +4,11 @@
 
 (require qi)
 
-(define-flow partn
-  (~>> X (-< drop-right drop)
-       (count <)))
+(define-flow partn (~>> (-< drop-right drop) (count <)))
 
-(define-flow part1* (partn 1 _))
+(define-flow part1* (partn 1))
 (define-flow part1 (~> file->list part1*))
-(define-flow part2* (partn 3 _))
+(define-flow part2* (partn 3))
 (define-flow part2 (~> file->list part2*))
 
 (module+ main
