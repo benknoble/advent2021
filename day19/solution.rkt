@@ -1,5 +1,7 @@
 #lang racket
 
+(provide (all-defined-out))
+
 (require qi
          data/queue
          "../common.rkt")

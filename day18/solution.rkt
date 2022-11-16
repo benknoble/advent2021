@@ -1,5 +1,7 @@
 #lang racket
 
+(provide (all-defined-out))
+
 (require qi)
 
 ;; Instead of keeping the tree structure, which makes splitting and exploding a

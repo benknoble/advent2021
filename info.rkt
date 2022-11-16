@@ -15,3 +15,5 @@
 (define pkg-desc "Advent of Code 2021 Package")
 (define version "0.0")
 (define pkg-authors '(benknoble))
+(define test-omit-paths '(;; too slow to test all the time
+                          "day19"))

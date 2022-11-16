@@ -1,5 +1,7 @@
 #lang racket
 
+(provide (all-defined-out))
+
 (require qi
          "../common.rkt")
 
@@ -47,20 +49,23 @@
   (~> X (== car _) fold1 set-count))
 (define-flow part1 (~> file->manual part1*))
 
-(define (display-points points)
+(define (points-graphic points)
   (define-values (xh yh)
     (~> (points) set->list sep
         (-< (~> (amp car) max add1)
             (~> (amp cdr) max add1))))
-  (for ([y (in-range yh)])
-    (for ([x (in-range xh)])
-      (display (if (set-member? points (cons x y))
-                 #\█
-                 #\space)))
-    (printf "\n")))
+  (for/list ([y (in-range yh)])
+    (for/list ([x (in-range xh)])
+      (if (set-member? points (cons x y))
+        #\█
+        #\space))))
+
+(define (display-points graphic)
+  (for ([row (in-list graphic)])
+    (~> (row) sep string (ε displayln))))
 
 (define-flow part2*
-  (~> X fold display-points))
+  (~> X fold points-graphic (ε display-points _)))
 (define-flow part2 (~> file->manual part2*))
 
 (module+ main

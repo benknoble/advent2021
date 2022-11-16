@@ -1,5 +1,7 @@
 #lang racket
 
+(provide (all-defined-out))
+
 (require qi
          ;; needs a 64-bit platform or part2 will overflow
          (only-in racket/fixnum make-fxvector in-fxvector)

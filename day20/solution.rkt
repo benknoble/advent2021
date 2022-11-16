@@ -1,5 +1,7 @@
 #lang racket
 
+(provide (all-defined-out))
+
 (require qi)
 
 (define-flow light? (or (eq? 1) (eq? #\#)))

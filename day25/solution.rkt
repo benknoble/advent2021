@@ -1,5 +1,7 @@
 #lang racket
 
+(provide (all-defined-out))
+
 (require qi)
 
 (struct cucumbers [x y map] #:transparent)

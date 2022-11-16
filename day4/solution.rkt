@@ -1,5 +1,7 @@
 #lang racket
 
+(provide (all-defined-out))
+
 (require qi)
 
 (define board-size 5)
@@ -32,7 +34,7 @@
   (~> sep (all false?)))
 
 (define-flow (winning-rows rows)
-  (~> sep (any winning-rows)))
+  (~> sep (any winning-row)))
 
 (define-flow (winning-rows-or-columns rows)
   (or winning-rows
