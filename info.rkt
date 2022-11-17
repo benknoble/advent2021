@@ -1,6 +1,7 @@
 #lang info
 (define collection "advent2021")
 (define deps '("base"
+               "rackunit-lib"
                "typed-racket"
                "rebellion"
                "graph"
