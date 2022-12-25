@@ -1,0 +1,5 @@
+#!/bin/bash
+set -e
+: "${1:=add-bindings-to-qi}"
+raco pkg install --auto https://github.com/drym-org/qi.git?path=qi{,-{lib,doc,test,probe}}"#$1"
+raco pkg install

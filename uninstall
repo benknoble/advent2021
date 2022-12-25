@@ -1,0 +1,2 @@
+#!/bin/bash
+exec raco pkg remove qi{,-{lib,test,doc,probe}} Qi-Quickscripts advent2021
