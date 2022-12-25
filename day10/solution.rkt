@@ -32,16 +32,18 @@
 
 (define checker-scores (hash #\) 3 #\] 57 #\} 1197 #\> 25137))
 
+(define checker (make-checker closers))
+
 (define-flow part1*
   (~> sep
-      (amp (make-checker closers))
+      (amp checker)
       (pass char?)
       (amp (hash-ref checker-scores _))
       +))
 (define-flow part1 (~> file->lines part1*))
 
 (define-flow incomplete?
-  (~> (make-checker closers)
+  (~> checker
       (if (or char? null?) ground _)))
 
 (define complete-scores (hash #\) 1 #\] 2 #\} 3 #\> 4))

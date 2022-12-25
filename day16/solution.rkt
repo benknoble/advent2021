@@ -99,7 +99,7 @@
      (define-values (data offset)
        (for/fold ([data null]
                   [offset (+ 11 1 start)])
-         ([_ (in-range length)])
+         ([_ignore (in-range length)])
          (~>> (offset)
               (decode packet-string)
               (== (cons data) _))))

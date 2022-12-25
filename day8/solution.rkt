@@ -96,7 +96,7 @@
        (remove-duplicates (find-pats-matching-digits pats '(0 6 9))))
      ;; 3
      (match-define-values (`(,six) zero-nine)
-       (partition (flow (~>> (subset? one) not)) zero-six-nine))
+       (partition (flow (not (subset? one _))) zero-six-nine))
      ;; 4
      (define C (set-first (set-subtract one six)))
      ;; 5

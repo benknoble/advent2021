@@ -81,7 +81,7 @@
 (define (stepN n) (flow (feedback n step)))
 
 (define-flow part1*
-  (~> (stepN 100) 2>))
+  (~> (esc (stepN 100)) 2>))
 (define-flow part1 (~> file->grid part1*))
 
 (define-flow part2*

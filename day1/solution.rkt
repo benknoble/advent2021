@@ -2,9 +2,10 @@
 
 (provide (all-defined-out))
 
-(require qi)
+(require qi
+         (prefix-in list: racket/list))
 
-(define-flow partn (~>> (-< drop-right drop) (count <)))
+(define-flow partn (~>> (-< drop-right drop) (list:count <)))
 
 (define-flow part1* (partn 1))
 (define-flow part1 (~> file->list part1*))

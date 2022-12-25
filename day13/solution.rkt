@@ -35,11 +35,11 @@
   (match instruction
     [`(x ,n)
       (~> (points)
-          (set-map (flow (~> (-< x y) (update-first n) cons)))
+          (set-map (flow (~> (-< x y) (esc (update-first n)) cons)))
           sep set)]
     [`(y ,n)
       (~> (points)
-          (set-map (flow (~> (-< y x) (update-first n) X cons)))
+          (set-map (flow (~> (-< y x) (esc (update-first n)) X cons)))
           sep set)]))
 
 (define (fold instructions points)

@@ -58,7 +58,7 @@
       (hash-ref n #f)
       (if _
         update-board-board
-        (const b))))
+        (gen b))))
 
 (define (find-first-winner moves boards)
   (let loop ([boards boards]

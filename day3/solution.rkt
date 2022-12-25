@@ -62,7 +62,7 @@
 (define-flow (fieldth field) (clos (~> X list-ref)))
 (define (criterion-solver selector rows)
   (define (filterc field criterion rows)
-    (define-flow matches (~> (fieldth field) (= criterion)))
+    (define-flow matches (~> (esc (fieldth field)) (= criterion)))
     (filter matches rows))
   ;; we cannot name this loop, because qi's flow has a loop syntactic form that
   ;; confuses our intent.

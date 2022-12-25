@@ -3,6 +3,7 @@
 (provide (all-defined-out))
 
 (require qi
+         (prefix-in list: racket/list)
          "../common.rkt")
 
 (struct point [x y] #:transparent)
@@ -63,7 +64,7 @@
        collect
        (group-by identity)
        (map length)
-       (count (flow (>= 2)))))
+       (list:count (flow (>= 2)))))
 
 (define-flow part1* (~>> list->segments (filter segment-cardinal?) count-overlaps))
 (define-flow part1 (~> (file->list read-ignore-comma) part1*))

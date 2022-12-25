@@ -2,7 +2,8 @@
 
 (provide (all-defined-out))
 
-(require qi)
+(require qi
+         (prefix-in list: racket/list))
 
 (define-flow light? (or (eq? 1) (eq? #\#)))
 (define-flow dark? (or (eq? 0) (eq? #\.)))
@@ -102,7 +103,7 @@
             (sub1 ym) (add1 yM))))
 
 (define-flow count-light
-  (~>> hash-values (count light?)))
+  (~>> hash-values (list:count light?)))
 
 (define (count-light-n n)
   (flow (~>> (enhance-image-n n) 1> (ε display-image count-light))))
