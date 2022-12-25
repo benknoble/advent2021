@@ -22,11 +22,8 @@
       (abs (- y1 y2))
       (abs (- z1 z2)))])
 
-;; we almost want (combinations 2) instead of (fanout 2) cartesian-product, but
-;; then the ability to find matching pairs is highly dependnent on ordering
 (define-flow (reld* ps)
-  (~> (fanout 2) cartesian-product sep
-      (pass (~> sep (not eq?)))
+  (~> (combinations 2) sep (amp (-< _ reverse))
       (amp (~> sep (-< reld 1>) collect))
       collect))
 
@@ -43,22 +40,26 @@
 ;; gives position for the station seeing qs relative to position seeing ps if
 ;; one exists, or #f
 ;; assumes both stations are oriented in the same direction
-(define-flow (p-for-s-or-false overlap-needed ps qs)
-  (~> (block 1)
-    ;; grab all the reld's
-    (amp station-relds)
-    ;; find matching reld's
-    cartesian-product sep
-    (pass (~> sep (amp car) equal?))
-
+(define (p-for-s-or-false overlap-needed ps qs)
+  (define (good-size size)
     ;; doubling accounts for the extraneous pairs from cartesian product (for
     ;; each (list (list rd p1) (list rd q1))
     ;; we have (list (list -rd p2) (list -rd q2))
-    (if (~> count (>= (* 2 overlap-needed)))
-      ;; found a match, compute position of station relative to other station
-      (~> 1> (-< cadar cadadr) reld)
-      ;; no match
-      #f)))
+    (>= size (* 2 overlap-needed)))
+  (define-values (pair size-overlap)
+    (for*/fold ([keep #f]
+                [size 0])
+      ([pd (in-list (station-relds ps))]
+       #:break (good-size size)
+       [qd (in-list (station-relds qs))]
+       ;; when relds match
+       #:when (equal? (car pd) (car qd)))
+      (values (or keep (list pd qd))
+              (add1 size))))
+  (and pair
+       (good-size size-overlap)
+       ;; found a match, compute position of station relative to other station
+       (~> (pair) (-< cadar cadadr) reld)))
 
 (define rotate-beacon
   (match-lambda
