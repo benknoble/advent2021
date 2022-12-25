@@ -58,14 +58,10 @@
 
 (define (solve . cubes)
   (for/fold ([volumes null]
-             #:result (~> (volumes) sep (amp volume) +))
+             #:result (for/sum ([v (in-list volumes)])
+                        (volume v)))
     ([cube (in-list cubes)])
-    (define to-add
-      (~> (volumes)
-          sep
-          (amp (c-intersect cube))
-          (pass _)
-          collect))
+    (define to-add (filter-map (flow (c-intersect cube)) volumes))
     (if (~> (cube) car (eq? 'on))
       (cons cube (append to-add volumes))
       (append to-add volumes))))
